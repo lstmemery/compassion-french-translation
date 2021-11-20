@@ -10,15 +10,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(ggthemes)
+library(feather)
 ```
 
 ```{r}
 df <- read_csv("../data/Compassion_14 November 2021_16.36.csv", )
 ```
+```{r}
+df
+```
+
+
 
 ```{r}
 responses <- df %>% 
-  select(starts_with("SOCS")) %>% 
+  select(ResponseId, starts_with("SOCS")) %>% 
   slice(3:n())
 
 responses
@@ -26,12 +32,18 @@ responses
 
 ```{r}
 ordered_responses <- responses %>% 
-  mutate_all(~if_else(is.na(.), ., str_extract(., "\\d$"))) %>% 
-  pivot_longer(everything(), names_to = "item", values_to = "response") %>% 
+  mutate(across(-ResponseId, ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
   mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
 
 ordered_responses
 ```
+
+```{r}
+ordered_responses %>% 
+  write_feather("../results/tidy_responses.feather")
+```
+
 
 
 ```{r, fig.width=16, fig.height=9}
@@ -40,6 +52,34 @@ ggplot(ordered_responses, aes(x=response)) +
   facet_wrap(~item, ncol = 10) +
   theme_few()
 ```
+
+Looks like very few people fell for SOCS-O 5 (The attention check.) I'm going to remove this item and and anyone who didn't respond to it.
+
+```{r}
+filtered_responses <- responses %>% 
+  mutate(across(-ResponseId, ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
+  filter(`SOCS-O_5` == "5") %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5"))) %>% 
+  filter(item != "SOCS-O_5")
+```
+
+```{r, fig.width=16, fig.height=9}
+ggplot(filtered_responses, aes(x=response)) +
+  geom_bar(stat = "count") +
+  facet_wrap(~item, ncol = 10) +
+  theme_few()
+```
+
+
+```{r}
+ordered_responses %>% 
+  write_feather("../results/tidy_filtered_responses.feather")
+```
+
+
+
+
 ```{r}
 devtools::session_info()
 ```
