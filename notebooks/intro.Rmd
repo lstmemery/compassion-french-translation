@@ -73,7 +73,7 @@ ggplot(filtered_responses, aes(x=response)) +
 
 
 ```{r}
-ordered_responses %>% 
+filtered_responses %>% 
   write_feather("../results/tidy_filtered_responses.feather")
 ```
 

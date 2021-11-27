@@ -1,0 +1,128 @@
+---
+title: "CFA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(lavaan)
+library(psych)
+library(broom)
+library(ggthemes)
+```
+
+```{r}
+df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
+  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+df
+```
+
+
+
+
+```{r}
+socs_s_df <- df %>% 
+  mutate(response = as.numeric(response)) %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  select(starts_with("SOCS-S"))
+  
+
+socs_s_df
+```
+
+```{r}
+socs_s <- polychoric(socs_s_df)
+socs_s
+```
+
+```{r}
+eigen(socs_s$rho)$values
+```
+Positive semidefinite
+
+```{r}
+socs_s_ordered_df <- df %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  select(starts_with("SOCS-S")) %>% 
+  rename_with(~str_c("s", str_extract(., "\\d+")))
+
+socs_s_ordered_df
+```
+
+
+## One-factor model
+
+```{r}
+one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_ordered_df), collapse = " + "))
+one_factor_model
+```
+
+
+```{r}
+one_factor_cfa <- cfa(one_factor_model, data=socs_s_ordered_df)
+one_factor_cfa
+```
+
+```{r}
+one_factor_glance <- glance(one_factor_cfa)
+one_factor_glance
+```
+```{r}
+summary(one_factor_cfa, standardized=TRUE, fit.measures=TRUE)
+```
+## Internal Reliability
+
+
+```{r}
+alpha(socs_s_df)
+```
+
+```{r}
+omega(socs_s_df)
+```
+
+
+(Need to also do omega)
+
+
+## Ceiling and Floor Effects
+
+```{r}
+total_scores <- df %>% 
+  mutate(response= as.numeric(response)) %>% 
+  group_by(ResponseId) %>% 
+  mutate(any_nas = any(is.na(response))) %>% 
+  filter(any_nas == FALSE) %>% 
+  filter(str_detect(item, "SOCS-S")) %>% 
+  summarise(total = sum(response))
+
+total_scores
+```
+
+```{r}
+ggplot(total_scores, aes(x=total)) +
+  geom_histogram() +
+  theme_few()
+```
+
+```{r}
+total_scores %>% 
+  filter(total == 100)
+```
+
+
+```{r}
+df
+```
+
+
+
+```{r}
+devtools::session_info()
+```
+
