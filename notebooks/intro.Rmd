@@ -11,21 +11,24 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggthemes)
 library(feather)
+library(lubridate)
 ```
 
 ```{r}
-df <- read_csv("../data/Compassion_14 November 2021_16.36.csv", )
+df <- read_csv("../data/Compassion_14 November 2021_16.36.csv")
 ```
 ```{r}
-df
+df <- df %>% 
+  slice(3:n()) %>% 
+  mutate(StartDate = as.Date(StartDate)) %>% 
+  filter(StartDate >= ymd("2021-01-02"))
 ```
 
 
 
 ```{r}
 responses <- df %>% 
-  select(ResponseId, starts_with("SOCS")) %>% 
-  slice(3:n())
+  select(ResponseId, starts_with("SOCS"))
 
 responses
 ```
