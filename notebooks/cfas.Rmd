@@ -14,6 +14,7 @@ library(lavaan)
 library(psych)
 library(broom)
 library(ggthemes)
+library(semTools)
 ```
 
 ```{r}
@@ -49,7 +50,8 @@ Positive semidefinite
 socs_s_ordered_df <- df %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
   select(starts_with("SOCS-S")) %>% 
-  rename_with(~str_c("s", str_extract(., "\\d+")))
+  rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
+  mutate_all(~fct_drop(.))
 
 socs_s_ordered_df
 ```
@@ -62,11 +64,75 @@ one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_ordered_df), c
 one_factor_model
 ```
 
+(How should I deal with non-responses? Possibly use SEM)
+(I am going to remove them for now and then use MICE)
 
 ```{r}
-one_factor_cfa <- cfa(one_factor_model, data=socs_s_ordered_df)
+one_factor_cfa <- cfa.mi(
+  one_factor_model, 
+  m=3, 
+  data=socs_s_ordered_df, 
+  estimator="WLSMV", 
+  miPackage="mice", 
+  seed=1
+  )
 one_factor_cfa
 ```
+```{r}
+warnings(one_factor_cfa)
+```
+
+```{r}
+five_factor_model <- '
+recognizing_suffering =~ s1 + s6 + s11 + s16
+universality_of_suffering =~ s2 + s7 + s12 + s17
+feeling_of_suffering =~ s3 + s8 + s13 + s18
+tolerating_discomfort =~ s4 + s9 + s14 + s19
+alleviate_suffering =~ s5 + s10 + s15 + s20
+self_compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering 
+'
+```
+
+```{r}
+five_factor_cfa <- cfa.mi(
+  five_factor_model, 
+  m=3, 
+  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)), 
+  estimator="MLR", 
+  miPackage="mice", 
+  seed=1
+  )
+five_factor_cfa
+```
+
+```{r}
+one_factor_cfa <- cfa(
+  one_factor_model, 
+  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)), 
+  estimator="MLR"
+  )
+```
+
+```{r}
+one_factor_cfa_check <- cfa(
+  one_factor_model, 
+  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)),
+  estimator="MLR"
+  )
+```
+```{r}
+summary(one_factor_cfa_check, standardized = TRUE, fit.measures = TRUE)
+```
+```{r}
+one_factor_cfa_check@SampleStats@
+```
+
+
+```{r}
+inspect(one_factor_cfa_check, what="std")$lambda
+```
+
+
 
 ```{r}
 one_factor_glance <- glance(one_factor_cfa)
@@ -118,6 +184,11 @@ total_scores %>%
 
 ```{r}
 df
+```
+
+
+```{r}
+runM
 ```
 
 
