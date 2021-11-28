@@ -30,8 +30,9 @@ df
 socs_s_df <- df %>% 
   mutate(response = as.numeric(response)) %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  select(starts_with("SOCS-S"))
-  
+  select(starts_with("SOCS-S")) %>% 
+  rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
+  filter_all(all_vars(!is.na(.))) 
 
 socs_s_df
 ```
@@ -46,21 +47,10 @@ eigen(socs_s$rho)$values
 ```
 Positive semidefinite
 
-```{r}
-socs_s_ordered_df <- df %>% 
-  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  select(starts_with("SOCS-S")) %>% 
-  rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
-  mutate_all(~fct_drop(.))
-
-socs_s_ordered_df
-```
-
-
 ## One-factor model
 
 ```{r}
-one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_ordered_df), collapse = " + "))
+one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_df), collapse = " + "))
 one_factor_model
 ```
 
@@ -68,18 +58,16 @@ one_factor_model
 (I am going to remove them for now and then use MICE)
 
 ```{r}
-one_factor_cfa <- cfa.mi(
+one_factor_cfa <- cfa(
   one_factor_model, 
-  m=3, 
-  data=socs_s_ordered_df, 
-  estimator="WLSMV", 
-  miPackage="mice", 
-  seed=1
+  data=socs_s_df, 
+  estimator="MLR"
   )
 one_factor_cfa
 ```
 ```{r}
-warnings(one_factor_cfa)
+one_factor_glance <- glance(one_factor_cfa)
+one_factor_glance
 ```
 
 ```{r}
@@ -89,71 +77,69 @@ universality_of_suffering =~ s2 + s7 + s12 + s17
 feeling_of_suffering =~ s3 + s8 + s13 + s18
 tolerating_discomfort =~ s4 + s9 + s14 + s19
 alleviate_suffering =~ s5 + s10 + s15 + s20
-self_compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering 
 '
 ```
 
 ```{r}
-five_factor_cfa <- cfa.mi(
+five_factor_cfa <- cfa(
   five_factor_model, 
-  m=3, 
-  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)), 
-  estimator="MLR", 
-  miPackage="mice", 
-  seed=1
+  data=socs_s_df, 
+  estimator="MLR"
   )
 five_factor_cfa
 ```
+```{r}
+five_factor_glance <- glance(five_factor_cfa)
+five_factor_glance
+```
 
 ```{r}
-one_factor_cfa <- cfa(
-  one_factor_model, 
-  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)), 
+hierarchical_factor_model <- '
+recognizing_suffering =~ s1 + s6 + s11 + s16
+universality_of_suffering =~ s2 + s7 + s12 + s17
+feeling_of_suffering =~ s3 + s8 + s13 + s18
+tolerating_discomfort =~ s4 + s9 + s14 + s19
+alleviate_suffering =~ s5 + s10 + s15 + s20
+compassion =~ s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20
+'
+hierarchical_factor_model
+```
+
+```{r}
+hierarchical_factor_cfa <- cfa(
+  hierarchical_factor_model, 
+  data=socs_s_df, 
   estimator="MLR"
   )
+hierarchical_factor_cfa
+```
+```{r}
+hierarchical_factor_glance <- glance(hierarchical_factor_cfa)
+hierarchical_factor_glance
 ```
 
 ```{r}
-one_factor_cfa_check <- cfa(
-  one_factor_model, 
-  data=socs_s_ordered_df %>% mutate_all(~as.numeric(.)),
-  estimator="MLR"
-  )
-```
-```{r}
-summary(one_factor_cfa_check, standardized = TRUE, fit.measures = TRUE)
-```
-```{r}
-one_factor_cfa_check@SampleStats@
+bind_rows(
+  one_factor_glance,
+  five_factor_glance,
+  hierarchical_factor_glance
+)
 ```
 
 
-```{r}
-inspect(one_factor_cfa_check, what="std")$lambda
-```
 
+
+## Internal Reliability (Total Scale)
 
 
 ```{r}
-one_factor_glance <- glance(one_factor_cfa)
-one_factor_glance
-```
-```{r}
-summary(one_factor_cfa, standardized=TRUE, fit.measures=TRUE)
-```
-## Internal Reliability
-
-
-```{r}
-alpha(socs_s_df)
+summary(alpha(socs_s_df))
 ```
 
 ```{r}
-omega(socs_s_df)
+summary(omega(socs_s_df))
 ```
 
-
-(Need to also do omega)
 
 
 ## Ceiling and Floor Effects
@@ -183,17 +169,6 @@ total_scores %>%
 
 
 ```{r}
-df
-```
-
-
-```{r}
-runM
-```
-
-
-
-```{r}
-devtools::session_info()
+sessionInfo()
 ```
 
