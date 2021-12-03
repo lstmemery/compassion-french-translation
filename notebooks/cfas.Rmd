@@ -1,6 +1,6 @@
 ---
-title: "CFA"
-output: html_document
+title: "SOCS-S Initial CFA"
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +15,8 @@ library(psych)
 library(broom)
 library(ggthemes)
 library(semTools)
+library(ggcorrplot)
+library(viridis)
 ```
 
 ```{r}
@@ -100,7 +102,7 @@ universality_of_suffering =~ s2 + s7 + s12 + s17
 feeling_of_suffering =~ s3 + s8 + s13 + s18
 tolerating_discomfort =~ s4 + s9 + s14 + s19
 alleviate_suffering =~ s5 + s10 + s15 + s20
-compassion =~ s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
 '
 hierarchical_factor_model
 ```
@@ -165,6 +167,109 @@ ggplot(total_scores, aes(x=total)) +
 ```{r}
 total_scores %>% 
   filter(total == 100)
+```
+## SOCS-O
+
+```{r}
+socs_o_df <- df %>% 
+  filter(str_detect(item, "SOCS-O")) %>% 
+  mutate(response = as.numeric(response)) %>% 
+  mutate(item_number = if_else(as.numeric(str_extract(item, "\\d+")) > 5, as.numeric(str_extract(item, "\\d+")) - 1, as.numeric(str_extract(item, "\\d+")))) %>% 
+  mutate(item = str_c("o", item_number)) %>% 
+  select(-item_number) %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  select(-ResponseId) %>% 
+  filter_all(all_vars(!is.na(.)))
+  
+```
+
+```{r}
+socs_o <- polychoric(socs_o_df)
+socs_o
+```
+```{r}
+ggcorrplot(socs_o$rho, ggtheme=theme_few()) +
+  scale_fill_viridis()
+```
+
+
+```{r}
+eigen(socs_o$rho)$values
+```
+```{r}
+one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_o_df), collapse = " + "))
+one_factor_model
+```
+
+```{r}
+one_factor_cfa <- cfa(
+  one_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+one_factor_cfa
+```
+
+```{r}
+one_factor_glance <- glance(one_factor_cfa)
+one_factor_glance
+```
+
+```{r}
+five_factor_model <- '
+recognizing_suffering =~ o1 + o6 + o11 + o16
+universality_of_suffering =~ o2 + o7 + o12 + o17
+feeling_of_suffering =~ o3 + o8 + o13 + o18
+tolerating_discomfort =~ o4 + o9 + o14 + o19
+alleviate_suffering =~ o5 + o10 + o15 + o20
+'
+```
+
+```{r}
+five_factor_cfa <- cfa(
+  five_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+five_factor_cfa
+```
+```{r}
+eigen(lavInspect(five_factor_cfa, "cov.lv"))
+```
+```{r}
+lavInspect(five_factor_cfa, "cov.lv")
+```
+
+
+```{r}
+inspect(five_factor_cfa,what="std")$lambda
+```
+
+
+```{r}
+five_factor_glance <- glance(five_factor_cfa)
+five_factor_glance
+```
+
+```{r}
+hierarchical_factor_model <- '
+recognizing_suffering =~ o1 + o6 + o11 + o16
+universality_of_suffering =~ o2 + o7 + o12 + o17
+feeling_of_suffering =~ o3 + o8 + o13 + o18
+tolerating_discomfort =~ o4 + o9 + o14 + o19
+alleviate_suffering =~ o5 + o10 + o15 + o20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
+'
+hierarchical_factor_model
+```
+
+```{r}
+hierarchical_factor_cfa <- cfa(
+  hierarchical_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+hierarchical_factor_cfa
 ```
 
 
