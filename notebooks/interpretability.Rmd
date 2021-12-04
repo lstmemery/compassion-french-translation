@@ -1,0 +1,35 @@
+---
+title: "Interpretability Analyses"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+```
+
+```{r}
+responses <- read_feather("../results/tidy_filtered_responses.feather")
+```
+
+```{r}
+responses %>% 
+  
+```
+
+
+```{r}
+  mutate(across(-ResponseId, ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+```
+
+
+```{r}
+sessionInfo()
+```
+

@@ -28,15 +28,18 @@ df <- df %>%
 
 ```{r}
 responses <- df %>% 
-  select(ResponseId, starts_with("SOCS"))
+  select(
+    ResponseId,
+    starts_with("SOCS")
+)
 
 responses
 ```
 
 ```{r}
 ordered_responses <- responses %>% 
-  mutate(across(-ResponseId, ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
-  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(across(starts_with("SOCS"), ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
+  pivot_longer(starts_with("SOCS"), names_to = "item", values_to = "response") %>% 
   mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
 
 ordered_responses
@@ -80,6 +83,34 @@ filtered_responses %>%
   write_feather("../results/tidy_filtered_responses.feather")
 ```
 
+```{r}
+demographics <- df %>% 
+  select(ResponseId, starts_with("DEM")) %>% 
+  pivot_longer(-ResponseId, names_to = "dem_item", values_to = "dem_value", values_drop_na=TRUE)
+
+demographics
+```
+
+```{r}
+demographics %>% 
+  write_feather("../results/tidy_demographics.feather")
+```
+
+```{r}
+socs_scales <- filtered_responses %>%
+  mutate(scale_type = str_extract(item, "SOCS-[A-Z]")) %>% 
+  mutate(response = as.numeric(response)) %>% 
+  group_by(ResponseId, scale_type) %>% 
+  summarise(socs_total = sum(response)) %>% 
+  pivot_wider(ResponseId, names_from = scale_type, values_from = socs_total)
+
+socs_scales
+```
+
+```{r}
+socs_scales %>% 
+  write_feather("../results/sosc_scales.feather")
+```
 
 
 
