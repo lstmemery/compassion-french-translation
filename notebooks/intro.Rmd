@@ -109,7 +109,7 @@ socs_scales
 
 ```{r}
 socs_scales %>% 
-  write_feather("../results/sosc_scales.feather")
+  write_feather("../results/socs_scales.feather")
 ```
 
 

@@ -13,21 +13,48 @@ library(feather)
 ```
 
 ```{r}
-responses <- read_feather("../results/tidy_filtered_responses.feather")
-```
-
-```{r}
-responses %>% 
-  
+socs_totals <- read_feather("../results/socs_scales.feather")
+demographics <- read_feather("../results/tidy_demographics.feather")
 ```
 
 
 ```{r}
-  mutate(across(-ResponseId, ~if_else(is.na(.), ., str_extract(., "\\d$")))) %>% 
-  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
-  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+ggplot(socs_totals, aes(x=`SOCS-O`)) +
+  geom_histogram(bins=15)
+```
+```{r}
+ggplot(socs_totals, aes(x=`SOCS-S`)) +
+  geom_histogram(bins=15)
 ```
 
+```{r}
+gender <- demographics %>% 
+  filter(dem_item == "DEM10")
+```
+
+```{r}
+socs_o_data <- socs_totals %>% 
+  inner_join(gender) %>% 
+  filter(!is.na(`SOCS-O`)) %>% 
+  filter(dem_value != "Préfère spécifier")
+
+socs_o_data
+```
+```{r}
+t.test(`SOCS-O` ~ dem_value, data=socs_o_data)
+```
+```{r}
+socs_s_data <- socs_totals %>% 
+  inner_join(gender) %>% 
+  filter(!is.na(`SOCS-S`)) %>% 
+  filter(dem_value != "Préfère spécifier")
+
+socs_s_data
+```
+
+```{r}
+t.test(`SOCS-S` ~ dem_value, data=socs_o_data)
+```
 
 ```{r}
 sessionInfo()
