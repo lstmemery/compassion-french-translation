@@ -100,6 +100,19 @@ socs_s_parameter_estimates
 ```
 
 
+
+```{r}
+ggcorrplot(socs_s$rho, ggtheme=theme_few()) +
+  scale_fill_viridis()
+```
+
+```{r}
+ggcorrplot(socs_o$rho, ggtheme=theme_few()) +
+  scale_fill_viridis()
+```
+
+
+
 ```{r}
 cov2cor(lavInspect(five_factor_cfa, "cov.lv"))
 ```
@@ -195,9 +208,10 @@ socs_o_df <- df %>%
 ```
 
 ```{r}
-df %>% 
-  filter(str_detect(item, "SOCS-O"))
+socs_o_df %>% 
+  write_feather("../results/tidy_socs_o.feather")
 ```
+
 
 
 ```{r}

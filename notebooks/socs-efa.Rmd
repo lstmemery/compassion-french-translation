@@ -1,0 +1,84 @@
+---
+title: "SOSC-O EFA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(psych)
+library(feather)
+library(elasticnet)
+library(regsem)
+```
+
+```{r}
+socs_o_df <- read_feather("../results/tidy_socs_o.feather")
+socs_o_df
+```
+
+```{r}
+socs_so_corr <- polychoric(socs_o_df)
+socs_so_corr
+```
+```{r}
+socs_o_efa <- fa(, nfactors = 5, n.obs = 383, fm="ml")
+socs_o_efa
+```
+```{r}
+socs_o_efa$loadings
+```
+
+
+
+```{r}
+scree(socs_so_corr$rho)
+```
+
+```{r}
+set.seed(1)
+socs_o_fit <- fa.parallel(df, fm="ml", nfactors = 5, cor="poly")
+socs_o_fit
+```
+```{r}
+summary(socs_o_efa)
+```
+
+
+
+```{r}
+sosc_o_3_factor <- fa(socs_o_df %>% select(-o19), nfactors = 3, cor="poly", fm="ml")
+summary(sosc_o_3_factor)
+```
+
+```{r}
+sosc_o_3_factor$loadings
+```
+
+
+```{r}
+nfactors(df %>% select(-o19), n=5, cor = "poly", fm="wls", rotate="oblimin")
+```
+
+```{r}
+mod = efaModel(3, colnames(socs_o_df))
+
+semFit = sem(mod, data = socs_o_df, int.ov.free = FALSE, int.lv.free = FALSE,
+            std.lv = TRUE, std.ov = TRUE, auto.fix.single = FALSE, se = "none")
+
+# note it requires smaller penalties than other applications
+reg.out2 = cv_regsem(model = semFit, pars_pen = "loadings",
+                    mult.start = TRUE, multi.iter = 10,
+                    n.lambda = 100, type = "lasso", jump = 10^-5, lambda.start = 0.001)
+```
+
+```{r}
+plot(reg.out2, show.minimum = "BIC")
+```
+```{r}
+reg.out2
+```
+
