@@ -113,8 +113,152 @@ socs_scales %>%
   write_feather("../results/socs_scales.feather")
 ```
 
+### PBIS
+
+```{r}
+tidy_pbis <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("PBIS")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d$")))
+
+tidy_pbis
+```
+```{r}
+tidy_pbis %>% 
+  write_feather("../results/tidy_pbis.feather")
+```
+
+```{r}
+pbis_scales <- tidy_pbis %>% 
+  group_by(ResponseId) %>% 
+  summarise(PBIS = sum(response))
+
+pbis_scales
+```
+
+```{r}
+pbis_scales %>% 
+  write_feather("../results/pbis_scales.feather")
+```
+
+### CS
+
+```{r}
+tidy_cs <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("CS")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d$")))
+
+tidy_cs
+```
+```{r}
+tidy_cs %>% 
+  write_feather("../results/tidy_cs.feather")
+```
+
+```{r}
+cs_scales <- tidy_cs %>% 
+  group_by(ResponseId) %>% 
+  summarise(CS = sum(response))
+
+cs_scales
+```
+
+```{r}
+cs_scales %>% 
+  write_feather("../results/cs_scales.feather")
+```
+
+### WEMWBS
+
+```{r}
+tidy_wemwbs <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("WEMWBS")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = case_when(
+    response == "Jamais" ~ 1,
+    response == "Rarement" ~ 2,
+    response == "Parfois" ~ 3,
+    response == "Souvent" ~ 4,
+    response == "Tout le temps" ~ 5,
+    TRUE ~ NA_real_
+  ))
+
+tidy_wemwbs
+```
+
+Jamais = Never
+Rarement = Rarely
+Parfois = Sometimes
+Souvent = Often
+Tout le temps = All the time
+
+```{r}
+tidy_wemwbs %>% 
+  write_feather("../results/tidy_wemwbs.feather")
+```
+
+```{r}
+wemwbs_scales <- tidy_wemwbs %>% 
+  group_by(ResponseId) %>% 
+  summarise(WEMWBS = sum(response))
+
+wemwbs_scales
+```
+
+```{r}
+wemwbs_scales %>% 
+  write_feather("../results/wemwbs_scales.feather")
+```
+
+### SCS
+
+```{r}
+tidy_scs <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("SCS")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d$")))
+
+tidy_scs
+```
+```{r}
+tidy_scs %>% 
+  write_feather("../results/tidy_scs.feather")
+```
+
+```{r}
+scs_scales <- tidy_scs %>% 
+  group_by(ResponseId) %>% 
+  summarise(SCS = sum(response))
+
+scs_scales
+```
+
+```{r}
+scs_scales %>% 
+  write_feather("../results/scs_scales.feather")
+```
+
+### FFMQ
+
+```{r}
+tidy_ffmq <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("FFMQ")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  distinct(response)
+
+tidy_ffmq
+```
 
 
+Parfois vrai = Sometimes true
+
+Très souvent ou toujours vrai = Very often or always true
 ```{r}
 devtools::session_info()
 ```
