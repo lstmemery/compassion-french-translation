@@ -18,6 +18,7 @@ library(lubridate)
 df <- read_csv("../data/Compassion_14 November 2021_16.36.csv")
 df
 ```
+
 ```{r}
 df <- df %>% 
   slice(3:n()) %>% 
@@ -243,6 +244,19 @@ scs_scales %>%
   write_feather("../results/scs_scales.feather")
 ```
 
+### CEAS-SC
+
+```{r}
+tidy_ceas_sc <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("CEAS-SC")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d+$")))
+
+tidy_ceas_sc
+```
+
+
 ### FFMQ
 
 ```{r}
@@ -250,15 +264,111 @@ tidy_ffmq <- df %>%
   semi_join(socs_scales) %>% 
   select(ResponseId, starts_with("FFMQ")) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
-  distinct(response)
+  mutate(response = case_when(
+    response == "Jamais ou très rarement vrai" ~ 1,
+    response == "Rarement vrai" ~ 2,
+    response == "Parfois vrai" ~ 3,
+    response == "Souvent vrai" ~ 4,
+    response == "Très souvent ou toujours vrai" ~ 5,
+    TRUE ~ NA_real_
+  ))
 
 tidy_ffmq
 ```
-
-
+Jamais ou très rarement vrai = Never or very rarely true
+Rarement vrai = Rarely true
 Parfois vrai = Sometimes true
-
+Souvent vrai = Often true
 Très souvent ou toujours vrai = Very often or always true
+
+```{r}
+tidy_ffmq %>% 
+  write_feather("../results/tidy_ffmq.feather")
+```
+
+```{r}
+ffmq_scales <- tidy_ffmq %>% 
+  group_by(ResponseId) %>% 
+  summarise(FFMQ = sum(response))
+
+ffmq_scales
+```
+
+```{r}
+ffmq_scales %>% 
+  write_feather("../results/ffmq_scales.feather")
+```
+
+Look at attention checks:
+
+```{r}
+df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("FFMQ")) %>% 
+  filter(FFMQ_12 != "Parfois vrai")
+```
+
+### ECR
+
+```{r}
+tidy_ecr <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("ECR")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d$")))
+
+tidy_ecr
+```
+
+```{r}
+tidy_ecr %>% 
+  write_feather("../results/tidy_ecr.feather")
+```
+
+```{r}
+ecr_scales <- tidy_ecr %>% 
+  group_by(ResponseId) %>% 
+  summarise(ECR = sum(response))
+
+ecr_scales
+```
+
+```{r}
+ecr_scales %>% 
+  write_feather("../results/ecr_scales.feather")
+```
+
+
+### DASS
+
+```{r}
+tidy_dass <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("DASS")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
+  mutate(response = as.numeric(str_extract(response, "\\d$")))
+
+tidy_dass
+```
+
+```{r}
+tidy_dass %>% 
+  write_feather("../results/tidy_dass.feather")
+```
+
+```{r}
+dass_scales <- tidy_dass %>% 
+  group_by(ResponseId) %>% 
+  summarise(DASS = sum(response))
+
+dass_scales
+```
+
+```{r}
+dass_scales %>% 
+  write_feather("../results/dass_scales.feather")
+```
+
 ```{r}
 devtools::session_info()
 ```
