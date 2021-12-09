@@ -299,7 +299,7 @@ ceas_to_scales
 ```
 
 ```{r}
-ceas_sc_scales %>% 
+ceas_to_scales %>% 
   write_feather("../results/ceas_to_scales.feather")
 ```
 
@@ -322,7 +322,7 @@ tidy_ceas_from %>%
 ```{r}
 ceas_from_scales <- tidy_ceas_from %>% 
   group_by(ResponseId) %>% 
-  summarise(CEAS_TO = sum(response))
+  summarise(CEAS_FROM = sum(response))
 
 ceas_from_scales
 ```

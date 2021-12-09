@@ -1,0 +1,35 @@
+---
+title: "scale_correlations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(purrr)
+library(ggcorrplot)
+library(viridis)
+```
+
+```{r}
+all_scales <- map_dfr(Sys.glob(file.path("../results/", "*_scales.feather")), read_feather) %>% 
+  pivot_longer(-ResponseId, values_drop_na = TRUE) %>% 
+  pivot_wider(ResponseId)
+
+all_scales
+```
+
+```{r}
+ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman")) +
+  scale_fill_viridis()
+```
+
+
+```{r}
+devtools::session_info()
+```
+
