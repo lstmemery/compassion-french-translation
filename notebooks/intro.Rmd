@@ -26,8 +26,6 @@ df <- df %>%
   filter(StartDate >= ymd("2021-01-02"))
 ```
 
-
-
 ```{r}
 responses <- df %>% 
   select(
@@ -51,7 +49,6 @@ ordered_responses
 ordered_responses %>% 
   write_feather("../results/tidy_responses.feather")
 ```
-
 
 
 ```{r, fig.width=16, fig.height=9}
@@ -255,14 +252,95 @@ tidy_ceas_sc <- df %>%
 
 tidy_ceas_sc
 ```
+```{r}
+tidy_ceas_sc %>% 
+  write_feather("../results/tidy_ceas_sc.feather")
+```
+
+```{r}
+ceas_sc_scales <- tidy_ceas_sc %>% 
+  group_by(ResponseId) %>% 
+  summarise(CEAS_SC = sum(response))
+
+ceas_sc_scales
+```
+
+```{r}
+ceas_sc_scales %>% 
+  write_feather("../results/ceas_sc_scales.feather")
+```
+
+### CEAS-TO
+
+Need to filter out attention check
+
+```{r}
+tidy_ceas_to <- df %>% 
+  semi_join(socs_scales) %>% 
+  select(ResponseId, starts_with("CEAS-TO")) %>% 
+  filter(`CEAS-TO1_4` == "Jamais\n1") %>%
+  select(-`CEAS-TO1_4`) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>%
+  mutate(response = as.numeric(str_extract(response, "\\d+$")))
+
+tidy_ceas_to
+```
+```{r}
+tidy_ceas_to %>% 
+  write_feather("../results/tidy_ceas_to.feather")
+```
+
+```{r}
+ceas_to_scales <- tidy_ceas_to %>% 
+  group_by(ResponseId) %>% 
+  summarise(CEAS_TO = sum(response))
+
+ceas_to_scales
+```
+
+```{r}
+ceas_sc_scales %>% 
+  write_feather("../results/ceas_to_scales.feather")
+```
+
+### CEAS-FROM
+
+```{r}
+tidy_ceas_from <- df %>% 
+  semi_join(ceas_to_scales) %>% 
+  select(ResponseId, starts_with("CEAS-FROM")) %>% 
+  pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>%
+  mutate(response = as.numeric(str_extract(response, "\\d+$")))
+
+tidy_ceas_from
+```
+```{r}
+tidy_ceas_from %>% 
+  write_feather("../results/tidy_ceas_from.feather")
+```
+
+```{r}
+ceas_from_scales <- tidy_ceas_from %>% 
+  group_by(ResponseId) %>% 
+  summarise(CEAS_TO = sum(response))
+
+ceas_from_scales
+```
+
+```{r}
+ceas_from_scales %>% 
+  write_feather("../results/ceas_from_scales.feather")
+```
 
 
 ### FFMQ
 
 ```{r}
 tidy_ffmq <- df %>% 
-  semi_join(socs_scales) %>% 
+  semi_join(ceas_to_scales) %>% 
   select(ResponseId, starts_with("FFMQ")) %>% 
+  filter(FFMQ_12 == "Parfois vrai") %>% 
+  select(-FFMQ_12) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
   mutate(response = case_when(
     response == "Jamais ou très rarement vrai" ~ 1,
@@ -299,20 +377,11 @@ ffmq_scales %>%
   write_feather("../results/ffmq_scales.feather")
 ```
 
-Look at attention checks:
-
-```{r}
-df %>% 
-  semi_join(socs_scales) %>% 
-  select(ResponseId, starts_with("FFMQ")) %>% 
-  filter(FFMQ_12 != "Parfois vrai")
-```
-
 ### ECR
 
 ```{r}
 tidy_ecr <- df %>% 
-  semi_join(socs_scales) %>% 
+  semi_join(ffmq_scales) %>% 
   select(ResponseId, starts_with("ECR")) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
   mutate(response = as.numeric(str_extract(response, "\\d$")))
@@ -343,7 +412,7 @@ ecr_scales %>%
 
 ```{r}
 tidy_dass <- df %>% 
-  semi_join(socs_scales) %>% 
+  semi_join(ffmq_scales) %>% 
   select(ResponseId, starts_with("DASS")) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
   mutate(response = as.numeric(str_extract(response, "\\d$")))
