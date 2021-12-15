@@ -23,9 +23,9 @@ all_scales <- map_dfr(Sys.glob(file.path("../results/", "*_scales.feather")), re
 all_scales
 ```
 
-```{r}
-ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman")) +
-  scale_fill_viridis()
+```{r, fig.width=16/4, fig.height=9/4}
+ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman"),
+           type = "upper", hc.order = TRUE, lab=TRUE)
 ```
 
 

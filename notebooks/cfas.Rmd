@@ -106,10 +106,7 @@ ggcorrplot(socs_s$rho, ggtheme=theme_few()) +
   scale_fill_viridis()
 ```
 
-```{r}
-ggcorrplot(socs_o$rho, ggtheme=theme_few()) +
-  scale_fill_viridis()
-```
+
 
 
 
@@ -153,8 +150,6 @@ bind_rows(
 ```
 
 
-
-
 ## Internal Reliability (Total Scale)
 
 
@@ -163,10 +158,8 @@ summary(alpha(socs_s_df))
 ```
 
 ```{r}
-summary(omega(socs_s_df))
+omega(socs_s_df)
 ```
-
-
 
 ## Ceiling and Floor Effects
 
@@ -192,6 +185,7 @@ ggplot(total_scores, aes(x=total)) +
 total_scores %>% 
   filter(total == 100)
 ```
+
 ## SOCS-O
 
 ```{r}
