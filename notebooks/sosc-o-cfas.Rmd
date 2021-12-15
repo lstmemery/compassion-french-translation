@@ -1,0 +1,202 @@
+---
+title: "SOSC-O CFAs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(lavaan)
+library(psych)
+library(broom)
+library(ggthemes)
+library(semTools)
+library(ggcorrplot)
+library(viridis)
+```
+
+```{r}
+df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
+  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+df
+```
+
+
+## SOCS-O
+
+```{r}
+socs_o_df <- df %>% 
+  filter(str_detect(item, "SOCS-O")) %>% 
+  mutate(response = as.numeric(response)) %>% 
+  mutate(item_number = if_else(as.numeric(str_extract(item, "\\d+")) > 5, as.numeric(str_extract(item, "\\d+")) - 1, as.numeric(str_extract(item, "\\d+")))) %>% 
+  mutate(item = str_c("o", item_number)) %>% 
+  select(-item_number) %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  select(-ResponseId) %>% 
+  filter_all(all_vars(!is.na(.)))
+  
+```
+
+```{r}
+socs_o_df %>% 
+  write_feather("../results/tidy_socs_o.feather")
+```
+
+
+
+```{r}
+socs_o_df
+```
+
+
+```{r}
+socs_o <- polychoric(socs_o_df)
+socs_o
+```
+```{r}
+ggcorrplot(socs_o$rho, ggtheme=theme_few()) +
+  scale_fill_viridis()
+```
+
+
+```{r}
+eigen(socs_o$rho)$values
+```
+```{r}
+one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_o_df), collapse = " + "))
+one_factor_model
+```
+
+```{r}
+one_factor_cfa <- cfa(
+  one_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+one_factor_cfa
+```
+
+```{r}
+one_factor_glance <- glance(one_factor_cfa)
+one_factor_glance
+```
+
+```{r}
+five_factor_model <- '
+recognizing_suffering =~ o1 + o6 + o11 + o16
+universality_of_suffering =~ o2 + o7 + o12 + o17
+feeling_of_suffering =~ o3 + o8 + o13 + o18
+tolerating_discomfort =~ o4 + o9 + o14 + o19
+alleviate_suffering =~ o5 + o10 + o15 + o20
+'
+```
+
+
+```{r}
+five_factor_cfa <- cfa(
+  five_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+five_factor_cfa
+```
+```{r}
+summary(five_factor_cfa)
+```
+
+
+```{r}
+cov2cor(lavInspect(five_factor_cfa, "cov.lv"))
+```
+
+
+```{r}
+five_factor_pop_model <- '
+recognizing_suffering =~ 1.14*o1 + 1.14*o6 + 1.14*o11 + 1.14*o16
+universality_of_suffering =~ 1.14*o2 + 1.14*o7 + 1.14*o12 + 1.14*o17
+feeling_of_suffering =~ 1.14*o3 + 1.14*o8 + 1.14*o13 + 1.14*o18
+tolerating_discomfort =~ 1.14*o4 + 1.14*o9 + 1.14*o14 + 1.14*o19
+alleviate_suffering =~ 1.14*o5 + 1.14*o10 + 1.14*o15 + 1.14*o20
+
+recognizing_suffering ~~ 0.26*recognizing_suffering
+universality_of_suffering ~~ 0.26*universality_of_suffering
+feeling_of_suffering ~~ 0.26*feeling_of_suffering
+tolerating_discomfort ~~ 0.26*tolerating_discomfort
+alleviate_suffering ~~ 0.26*alleviate_suffering
+
+recognizing_suffering ~~ 0.26*universality_of_suffering
+recognizing_suffering ~~ 0.26*feeling_of_suffering
+recognizing_suffering ~~ 0.26*tolerating_discomfort
+recognizing_suffering ~~ 0.26*alleviate_suffering
+
+universality_of_suffering ~~ 0.26*feeling_of_suffering
+universality_of_suffering ~~ 0.26*tolerating_discomfort
+universality_of_suffering ~~ 0.26*alleviate_suffering
+
+feeling_of_suffering ~~ 0.26*tolerating_discomfort
+feeling_of_suffering ~~ 0.26*alleviate_suffering
+
+tolerating_discomfort ~~ 0.26*alleviate_suffering
+'
+
+```
+
+```{r}
+five_factor_pa <- SSpower(five_factor_model, popModel = five_factor_pop_model, n=80, nparam=1, std.lv=TRUE)
+```
+
+```{r}
+five_factor_pa
+```
+
+
+
+```{r}
+eigen(lavInspect(five_factor_cfa, "cov.lv"))
+```
+```{r}
+lavInspect(five_factor_cfa, "cov.lv")
+```
+
+
+```{r}
+inspect(five_factor_cfa,what="std")$lambda
+```
+
+
+```{r}
+five_factor_glance <- glance(five_factor_cfa)
+five_factor_glance
+```
+
+```{r}
+hierarchical_factor_model <- '
+recognizing_suffering =~ o1 + o6 + o11 + o16
+universality_of_suffering =~ o2 + o7 + o12 + o17
+feeling_of_suffering =~ o3 + o8 + o13 + o18
+tolerating_discomfort =~ o4 + o9 + o14 + o19
+alleviate_suffering =~ o5 + o10 + o15 + o20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
+'
+hierarchical_factor_model
+```
+
+```{r}
+hierarchical_factor_cfa <- cfa(
+  hierarchical_factor_model, 
+  data=socs_o_df, 
+  estimator="MLR"
+  )
+hierarchical_factor_cfa
+```
+
+
+```{r}
+sessionInfo()
+```
+
+
