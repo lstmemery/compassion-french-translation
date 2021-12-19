@@ -17,6 +17,11 @@ library(ggthemes)
 library(semTools)
 library(ggcorrplot)
 library(viridis)
+library(blavaan)
+future::plan("multisession")
+library(bayesplot)
+library(loo)
+options(mc.cores = 4)
 ```
 
 ```{r}
@@ -79,11 +84,65 @@ one_factor_cfa <- cfa(
   )
 one_factor_cfa
 ```
+```{r}
+
+if (file.exists("../models/one_factor_bcfa.blav")) {
+  load("../models/one_factor_bcfa.blav")
+} else {
+one_factor_bcfa <- bcfa(
+  one_factor_model, 
+  data=socs_o_df,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(one_factor_bcfa, file="../models/one_factor_bcfa.blav")
+}
+
+```
+
+```{r}
+blavFitIndices(one_factor_bcfa)
+```
+```{r}
+one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+```
+
+```{r}
+plot(one_loo_fit, label_points = TRUE)
+```
+
+```{r}
+new_one_model <- "compassion =~ o1 + o2 + o3 + o4 + o5 + o6 + o7 + o8 + o9 + o10 + o11 + o12 + o13 + o14 + o15 + o16 + o17 + o18 + o20"
+```
+
+```{r}
+one_factor_bcfa <- bcfa(
+  new_one_model, 
+  data=socs_o_df,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+```
+```{r}
+one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+```
+
+```{r}
+plot(one_loo_fit, label_points = TRUE)
+```
+
+```{r}
+fitmeasures(one_factor_bcfa)
+```
+
 
 ```{r}
 one_factor_glance <- glance(one_factor_cfa)
 one_factor_glance
 ```
+
 
 ```{r}
 five_factor_model <- '
@@ -107,12 +166,73 @@ five_factor_cfa
 ```{r}
 summary(five_factor_cfa)
 ```
+### Let's get Bayesian
+
+```{r}
+if (file.exists("../models/five_factor_bcfa.blav")) {
+  load("../models/five_factor_bcfa.blav")
+} else {
+five_factor_bcfa <- bcfa(
+  five_factor_model, 
+  data=socs_o_df,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(five_factor_bcfa, file="../models/five_factor_bcfa.blav")
+}
+
+```
+
+```{r}
+summary(five_factor_bcfa)
+```
+
+```{r}
+cov2cor(blavInspect(five_factor_bcfa, "cov.lv"))
+```
+
+```{r}
+omegaFromSem(five_factor_bcfa)
+```
+```{r}
+class(five_factor_bcfa)
+```
+```{r}
+blavInspect(five_factor_bcfa, "psrf")
+```
+
+
+
+```{r}
+plot(five_factor_bcfa, 1:20, "trace")
+```
+
+
+```{r}
+fitmeasures(five_factor_bcfa)
+```
+
+```{r}
+five_loo_fit <- loo(blavInspect(five_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+```
+
+```{r}
+plot(five_loo_fit, label_points = TRUE)
+```
+
+```{r}
+loo_moment_match(blavInspect(five_factor_bcfa, "mcobj"), loo=five_loo_fit)
+```
 
 
 ```{r}
 cov2cor(lavInspect(five_factor_cfa, "cov.lv"))
 ```
 
+```{r}
+cov2cor(lavInspect(five_factor_bcfa, "cov.lv"))
+```
 
 ```{r}
 five_factor_pop_model <- '
@@ -164,7 +284,7 @@ lavInspect(five_factor_cfa, "cov.lv")
 
 
 ```{r}
-inspect(five_factor_cfa,what="std")$lambda
+inspect(five_factor_cfa, what="std")$lambda
 ```
 
 
@@ -193,6 +313,107 @@ hierarchical_factor_cfa <- cfa(
   )
 hierarchical_factor_cfa
 ```
+
+```{r}
+if (file.exists("../models/hierarchical_factor_bcfa.blav")) {
+  load("../models/hierarchical_factor_bcfa.blav")
+} else {
+hierarchical_factor_bcfa <- bcfa(
+  hierarchical_factor_model,
+  inits = "simple",
+  data=socs_o_df,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(hierarchical_factor_bcfa, file="../models/hierarchical_factor_bcfa.blav")
+}
+```
+
+```{r}
+as.data.frame(hierarchical_factor_bcfa@ParTable)
+```
+
+```{r}
+dpriors()
+```
+
+
+```{r}
+blavInspect(hierarchical_factor_bcfa, "inits")
+```
+
+
+```{r}
+hierarchical_fit <- blavFitIndices(hierarchical_factor_bcfa)
+```
+
+```{r, fig.width=16/2, fig.height=9/2}
+plot(hierarchical_factor_bcfa,1:20, plot.type = "trace")
+```
+```{r}
+dpriors(hierarchical_factor_bcfa)
+```
+
+```{r}
+bcfa_compare <- blavCompare(one_factor_bcfa, hierarchical_factor_bcfa)
+```
+```{r}
+bcfa_compare
+```
+
+
+```{r}
+hierarchical_loo_fit <- loo(blavInspect(hierarchical_factor_bcfa, "mcobj"), save_psis = TRUE, k_threshold = 0.5)
+```
+
+```{r}
+plot(hierarchical_loo_fit, label_points = TRUE)
+```
+
+
+```{r}
+loo_moment_match(blavInspect(hierarchical_factor_bcfa, "mcobj"), hierarchical_loo_fit)
+```
+```{r}
+plot(hierarchical_loo_fit)
+```
+```{r}
+pareto_k_ids(hierarchical_loo_fit)
+```
+
+```{r}
+summary(hierarchical_loo_fit)
+```
+
+```{r}
+hierarchical_loo_mm_fit <- loo(blavInspect(hierarchical_factor_bcfa, "mcobj"), moment_match = TRUE)
+```
+
+### Model improvements
+
+```{r}
+new_factor_model <- '
+recognizing_suffering =~ o1 + o6 + o11 + o16
+universality_of_suffering =~ o2 + o7 + o12 + o17
+feeling_of_suffering =~ o3 + o8 + o13 + o18 + o4 + o9 + o14 
+alleviate_suffering =~ o5 + o10 + o15 + o20
+'
+```
+
+```{r}
+new_factor_bcfa <- bcfa(
+  new_factor_model, 
+  data=socs_o_df,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+```
+```{r}
+new_factor_bcfa
+```
+
 
 
 ```{r}

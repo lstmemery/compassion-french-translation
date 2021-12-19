@@ -158,8 +158,13 @@ summary(alpha(socs_s_df))
 ```
 
 ```{r}
-omega(socs_s_df)
+socs_s_omega <- omegaFromSem(five_factor_cfa)
 ```
+```{r}
+
+```
+
+
 
 ## Ceiling and Floor Effects
 
