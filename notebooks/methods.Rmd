@@ -1,0 +1,30 @@
+---
+title: "Methods"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(feather)
+```
+
+```{r data, include=FALSE}
+socs_totals <- read_feather("../results/socs_scales.feather")
+demographics <- read_feather("../results/tidy_demographics.feather")
+age <- read_feather("../results/age.feather")
+gender_summary <- read_feather("../results/gender_summary.feather")
+```
+
+## Materials and Methods
+
+A sample of `r count(socs_totals)` French speakers completed an online
+survey. Of the `r count(age)` respondents that chose to disclose, the
+average age was `r round(mean(age$age), 2)`
+(SD=`r round(sd(age$age), 2)`; range:
+`r min(age$age)`-`r max(age$age)`). Of the `r sum(gender_summary$count)`
+participants that responded,
+`r filter(gender_summary, gender == "Féminin")$count` were female,
+`r filter(gender_summary, gender == "Masculin")$count` were male, and
+`r filter(gender_summary, gender == "Préfère spécifier")$count`
+preferred not to specify.

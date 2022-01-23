@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(feather)
+library(flextable)
 ```
 
 ```{r}
@@ -17,11 +18,11 @@ socs_totals <- read_feather("../results/socs_scales.feather")
 demographics <- read_feather("../results/tidy_demographics.feather")
 ```
 
-
 ```{r}
 ggplot(socs_totals, aes(x=`SOCS-O`)) +
   geom_histogram(bins=15)
 ```
+
 ```{r}
 ggplot(socs_totals, aes(x=`SOCS-S`)) +
   geom_histogram(bins=15)
@@ -33,6 +34,20 @@ gender <- demographics %>%
 ```
 
 ```{r}
+gender_summary <- gender %>% 
+  semi_join(socs_totals) %>% 
+  count(dem_value) %>% 
+  rename(gender = dem_value, count = n)
+
+gender_summary
+```
+
+```{r}
+gender_summary %>% 
+  write_feather("../results/gender_summary.feather")
+```
+
+```{r}
 socs_o_data <- socs_totals %>% 
   inner_join(gender) %>% 
   filter(!is.na(`SOCS-O`)) %>% 
@@ -40,9 +55,11 @@ socs_o_data <- socs_totals %>%
 
 socs_o_data
 ```
+
 ```{r}
 t.test(`SOCS-O` ~ dem_value, data=socs_o_data)
 ```
+
 ```{r}
 socs_s_data <- socs_totals %>% 
   inner_join(gender) %>% 
@@ -57,6 +74,95 @@ t.test(`SOCS-S` ~ dem_value, data=socs_o_data)
 ```
 
 ```{r}
-sessionInfo()
+age <- demographics %>% 
+  filter(dem_item == "DEM9") %>% 
+  mutate(dem_value = as.numeric(dem_value)) %>% 
+  semi_join(socs_totals) %>% 
+  select(-dem_item) %>% 
+  rename(age = dem_value)
+
+age
 ```
 
+```{r}
+age %>% 
+  write_feather("../results/age.feather")
+```
+
+### Primary language
+
+```{r}
+primary_language <- demographics %>% 
+  filter(dem_item == "DEM3") %>% 
+  semi_join(socs_totals) %>% 
+  count(dem_value)
+
+primary_language
+```
+
+### Means and Standard Deviations
+
+```{r}
+all_participants <- socs_totals %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+gender_participants <- socs_totals %>% 
+  left_join(gender) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+demographics %>% 
+  filter(dem_item == "DEM3") %>% 
+  right_join(socs_totals) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))  
+```
+
+```{r}
+demographics %>% 
+  filter(dem_item == "DEM2") %>% 
+  right_join(socs_totals) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+demographics %>% 
+  filter(dem_item == "DEM4") %>% 
+  right_join(socs_totals) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+demographics %>% 
+  filter(dem_item == "DEM5") %>% 
+  right_join(socs_totals) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+demographics %>% 
+  filter(dem_item == "DEM6") %>% 
+  right_join(socs_totals) %>% 
+  group_by(dem_value) %>% 
+  summarise(across(starts_with("SOCS"), list(mean = ~round(mean(., na.rm=TRUE), 2), sd = ~round(sd(., na.rm=TRUE), 2), count = ~n())))
+```
+
+```{r}
+demographics %>% 
+  distinct(dem_item)
+```
+
+```{r}
+bind_rows(all_participants, gender_participants)
+```
+
+```{r}
+sessionInfo()
+```

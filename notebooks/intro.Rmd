@@ -50,7 +50,6 @@ ordered_responses %>%
   write_feather("../results/tidy_responses.feather")
 ```
 
-
 ```{r, fig.width=16, fig.height=9}
 ggplot(ordered_responses, aes(x=response)) +
   geom_bar(stat = "count") +
@@ -58,7 +57,8 @@ ggplot(ordered_responses, aes(x=response)) +
   theme_few()
 ```
 
-Looks like very few people fell for SOCS-O 5 (The attention check.) I'm going to remove this item and and anyone who didn't respond to it.
+Looks like very few people fell for SOCS-O 5 (The attention check.) I'm
+going to remove this item and and anyone who didn't respond to it.
 
 ```{r}
 filtered_responses <- responses %>% 
@@ -75,7 +75,6 @@ ggplot(filtered_responses, aes(x=response)) +
   facet_wrap(~item, ncol = 10) +
   theme_few()
 ```
-
 
 ```{r}
 filtered_responses %>% 
@@ -122,6 +121,7 @@ tidy_pbis <- df %>%
 
 tidy_pbis
 ```
+
 ```{r}
 tidy_pbis %>% 
   write_feather("../results/tidy_pbis.feather")
@@ -130,7 +130,7 @@ tidy_pbis %>%
 ```{r}
 pbis_scales <- tidy_pbis %>% 
   group_by(ResponseId) %>% 
-  summarise(PBIS = sum(response))
+  summarise(PBIS = mean(response))
 
 pbis_scales
 ```
@@ -147,21 +147,43 @@ tidy_cs <- df %>%
   semi_join(socs_scales) %>% 
   select(ResponseId, starts_with("CS")) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
-  mutate(response = as.numeric(str_extract(response, "\\d$")))
+  mutate(response = as.numeric(str_extract(response, "\\d$"))) %>% 
+  mutate(
+    response=if_else(
+      item %in% c("CS_3", "CS_7", "CS_11", "CS_15"),  # Indifference subscales are reverse coded
+      case_when(response == 5 ~ 1,
+                response == 4 ~ 2,
+                response == 2 ~ 4,
+                response == 1 ~ 5,
+                TRUE ~ response),
+                 response)) %>% 
+  mutate(sub_scale = case_when(
+    item %in% c("CS_2", "CS_6", "CS_10", "CS_14") ~ "CS_Kind",
+    item %in% c("CS_1", "CS_5", "CS_9", "CS_13") ~ "CS_Mindfulness",
+    item %in% c("CS_3", "CS_7", "CS_11", "CS_15") ~ "CS_Indifference_Reverse",
+    item %in% c("CS_4", "CS_8", "CS_12", "CS_16") ~ "CS_Common_Humanity",
+  ))
 
 tidy_cs
 ```
+
 ```{r}
 tidy_cs %>% 
   write_feather("../results/tidy_cs.feather")
 ```
 
 ```{r}
+cs_subscales <- tidy_cs %>% 
+  group_by(ResponseId, sub_scale) %>% 
+  summarise(sub_scale_response = mean(response)) %>% 
+  filter(!is.na(sub_scale_response)) %>% 
+  pivot_wider(ResponseId, names_from = sub_scale, values_from = sub_scale_response)
+
 cs_scales <- tidy_cs %>% 
   group_by(ResponseId) %>% 
-  summarise(CS = sum(response))
-
-cs_scales
+  summarise(scale_response = mean(response)) %>% 
+  filter(!is.na(scale_response)) %>% 
+  right_join(cs_subscales)
 ```
 
 ```{r}
@@ -188,10 +210,7 @@ tidy_wemwbs <- df %>%
 tidy_wemwbs
 ```
 
-Jamais = Never
-Rarement = Rarely
-Parfois = Sometimes
-Souvent = Often
+Jamais = Never Rarement = Rarely Parfois = Sometimes Souvent = Often
 Tout le temps = All the time
 
 ```{r}
@@ -202,7 +221,8 @@ tidy_wemwbs %>%
 ```{r}
 wemwbs_scales <- tidy_wemwbs %>% 
   group_by(ResponseId) %>% 
-  summarise(WEMWBS = sum(response))
+  summarise(WEMWBS = sum(response)) %>% 
+  filter(!is.na(WEMWBS))
 
 wemwbs_scales
 ```
@@ -219,10 +239,19 @@ tidy_scs <- df %>%
   semi_join(socs_scales) %>% 
   select(ResponseId, starts_with("SCS")) %>% 
   pivot_longer(-ResponseId, names_to = "item", values_to = "response") %>% 
-  mutate(response = as.numeric(str_extract(response, "\\d$")))
+  mutate(response = as.numeric(str_extract(response, "\\d$"))) %>% 
+    mutate(sub_scale = case_when(
+    item %in% c("SCS_5", "SCS_12", "SCS_19", "SCS_23", "SCS_26") ~ "CSC_Self_Kindness",
+    item %in% c("SCS_1", "SCS_8", "SCS_11", "SCS_16", "SCS_21") ~ "CSC_Self_Judgement",
+    item %in% c("SCS_3", "SCS_7", "SCS_10", "SCS_15") ~ "CSC_Common_Humanity",
+    item %in% c("SCS_4", "SCS_13", "SCS_18", "SCS_25") ~ "CSC_Isolation",
+        item %in% c("SCS_9", "SCS_14", "SCS_17", "SCS_22") ~ "CSC_Mindfulness",
+            item %in% c("SCS_2", "SCS_6", "SCS_20", "SCS_24") ~ "CSC_Overidentification",
+  ))
 
 tidy_scs
 ```
+
 ```{r}
 tidy_scs %>% 
   write_feather("../results/tidy_scs.feather")
@@ -252,6 +281,7 @@ tidy_ceas_sc <- df %>%
 
 tidy_ceas_sc
 ```
+
 ```{r}
 tidy_ceas_sc %>% 
   write_feather("../results/tidy_ceas_sc.feather")
@@ -285,6 +315,7 @@ tidy_ceas_to <- df %>%
 
 tidy_ceas_to
 ```
+
 ```{r}
 tidy_ceas_to %>% 
   write_feather("../results/tidy_ceas_to.feather")
@@ -314,6 +345,7 @@ tidy_ceas_from <- df %>%
 
 tidy_ceas_from
 ```
+
 ```{r}
 tidy_ceas_from %>% 
   write_feather("../results/tidy_ceas_from.feather")
@@ -331,7 +363,6 @@ ceas_from_scales
 ceas_from_scales %>% 
   write_feather("../results/ceas_from_scales.feather")
 ```
-
 
 ### FFMQ
 
@@ -353,11 +384,10 @@ tidy_ffmq <- df %>%
 
 tidy_ffmq
 ```
-Jamais ou très rarement vrai = Never or very rarely true
-Rarement vrai = Rarely true
-Parfois vrai = Sometimes true
-Souvent vrai = Often true
-Très souvent ou toujours vrai = Very often or always true
+
+Jamais ou très rarement vrai = Never or very rarely true Rarement vrai =
+Rarely true Parfois vrai = Sometimes true Souvent vrai = Often true Très
+souvent ou toujours vrai = Very often or always true
 
 ```{r}
 tidy_ffmq %>% 
@@ -407,7 +437,6 @@ ecr_scales %>%
   write_feather("../results/ecr_scales.feather")
 ```
 
-
 ### DASS
 
 ```{r}
@@ -441,4 +470,3 @@ dass_scales %>%
 ```{r}
 devtools::session_info()
 ```
-
