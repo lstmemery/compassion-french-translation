@@ -1,6 +1,8 @@
 ---
 title: "scale_correlations"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +15,9 @@ library(feather)
 library(purrr)
 library(ggcorrplot)
 library(viridis)
+library(jtools)
+library(MESS)
+library(psych)
 ```
 
 ```{r}
@@ -23,13 +28,72 @@ all_scales <- map_dfr(Sys.glob(file.path("../results/", "*_scales.feather")), re
 all_scales
 ```
 
+```{r}
+df_cor <- cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman")
+
+cor_row_names <- row.names(df_cor)  
+
+df_cor %>% 
+  as_tibble() %>% 
+  mutate(row_name = cor_row_names) %>% 
+  filter(str_detect(row_name, "SOCS")) %>% 
+  select(row_name, !contains("SOCS"))
+```
+
 ```{r, fig.width=16/4, fig.height=9/4}
 ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman"),
            type = "upper", hc.order = TRUE, lab=TRUE)
 ```
 
+```{r}
+all_scale_cor <- corr.test(all_scales %>% select(-ResponseId))
+  
+```
+
+```{r}
+clean_cor <- all_scale_cor$r %>% 
+  as_tibble() %>% 
+  mutate_all(~round(., 2)) %>% 
+  mutate(row_name = cor_row_names) %>% 
+  filter(str_detect(row_name, "SOCS")) %>% 
+  select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
+
+clean_cor
+```
+
+```{r}
+p_values <- all_scale_cor$p %>% 
+  as_tibble() %>% 
+  mutate(row_name = cor_row_names) %>% 
+  filter(str_detect(row_name, "SOCS")) %>% 
+  select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
+
+p_col <- ncol(p_values)
+p_row <- nrow(p_values)
+
+p_stars <- p_values %>% 
+  mutate(across(where(is.numeric), ~p.adjust(., method="BH", n=p_col * p_row))) %>% 
+  mutate(across(where(is.numeric), ~case_when(
+    . > 0.05 ~ "",
+    . > 0.01 ~ "*",
+    . > 0.001 ~ "**",
+    TRUE ~ "***"
+    )))
+
+p_stars
+
+```
+
+```{r}
+cor_names <- colnames(clean_cor)[2:ncol(clean_cor)]
+
+results <- map_dfc(cor_names, ~paste0(clean_cor[[.]], p_stars[[.]]))
+colnames(results) <- cor_names
+results %>% 
+  mutate(SOCS = clean_cor[[1]]) %>% 
+  select(SOCS, everything())
+```
 
 ```{r}
 devtools::session_info()
 ```
-

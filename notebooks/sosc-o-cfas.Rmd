@@ -30,7 +30,6 @@ df <- read_feather("../results/tidy_filtered_responses.feather") %>%
 df
 ```
 
-
 ## SOCS-O
 
 ```{r}
@@ -51,26 +50,24 @@ socs_o_df %>%
   write_feather("../results/tidy_socs_o.feather")
 ```
 
-
-
 ```{r}
 socs_o_df
 ```
-
 
 ```{r}
 socs_o <- polychoric(socs_o_df)
 socs_o
 ```
+
 ```{r}
 ggcorrplot(socs_o$rho, ggtheme=theme_few()) +
   scale_fill_viridis()
 ```
 
-
 ```{r}
 eigen(socs_o$rho)$values
 ```
+
 ```{r}
 one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_o_df), collapse = " + "))
 one_factor_model
@@ -84,6 +81,7 @@ one_factor_cfa <- cfa(
   )
 one_factor_cfa
 ```
+
 ```{r}
 
 if (file.exists("../models/one_factor_bcfa.blav")) {
@@ -104,6 +102,7 @@ save(one_factor_bcfa, file="../models/one_factor_bcfa.blav")
 ```{r}
 blavFitIndices(one_factor_bcfa)
 ```
+
 ```{r}
 one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
 ```
@@ -125,6 +124,7 @@ one_factor_bcfa <- bcfa(
   bcontrol = list(cores = 4)
   )
 ```
+
 ```{r}
 one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
 ```
@@ -137,12 +137,10 @@ plot(one_loo_fit, label_points = TRUE)
 fitmeasures(one_factor_bcfa)
 ```
 
-
 ```{r}
 one_factor_glance <- glance(one_factor_cfa)
 one_factor_glance
 ```
-
 
 ```{r}
 five_factor_model <- '
@@ -154,7 +152,6 @@ alleviate_suffering =~ o5 + o10 + o15 + o20
 '
 ```
 
-
 ```{r}
 five_factor_cfa <- cfa(
   five_factor_model, 
@@ -163,9 +160,11 @@ five_factor_cfa <- cfa(
   )
 five_factor_cfa
 ```
+
 ```{r}
 summary(five_factor_cfa)
 ```
+
 ### Let's get Bayesian
 
 ```{r}
@@ -195,19 +194,18 @@ cov2cor(blavInspect(five_factor_bcfa, "cov.lv"))
 ```{r}
 omegaFromSem(five_factor_bcfa)
 ```
+
 ```{r}
 class(five_factor_bcfa)
 ```
+
 ```{r}
 blavInspect(five_factor_bcfa, "psrf")
 ```
 
-
-
 ```{r}
 plot(five_factor_bcfa, 1:20, "trace")
 ```
-
 
 ```{r}
 fitmeasures(five_factor_bcfa)
@@ -224,7 +222,6 @@ plot(five_loo_fit, label_points = TRUE)
 ```{r}
 loo_moment_match(blavInspect(five_factor_bcfa, "mcobj"), loo=five_loo_fit)
 ```
-
 
 ```{r}
 cov2cor(lavInspect(five_factor_cfa, "cov.lv"))
@@ -266,27 +263,24 @@ tolerating_discomfort ~~ 0.26*alleviate_suffering
 ```
 
 ```{r}
-five_factor_pa <- SSpower(five_factor_model, popModel = five_factor_pop_model, n=80, nparam=1, std.lv=TRUE)
+five_factor_pa <- SSpower(five_factor_model, popModel = five_factor_pop_model, n=10, alpha=0.2, nparam=0, std.lv=TRUE)
 ```
 
 ```{r}
 five_factor_pa
 ```
 
-
-
 ```{r}
 eigen(lavInspect(five_factor_cfa, "cov.lv"))
 ```
+
 ```{r}
 lavInspect(five_factor_cfa, "cov.lv")
 ```
 
-
 ```{r}
 inspect(five_factor_cfa, what="std")$lambda
 ```
-
 
 ```{r}
 five_factor_glance <- glance(five_factor_cfa)
@@ -338,11 +332,9 @@ as.data.frame(hierarchical_factor_bcfa@ParTable)
 dpriors()
 ```
 
-
 ```{r}
 blavInspect(hierarchical_factor_bcfa, "inits")
 ```
-
 
 ```{r}
 hierarchical_fit <- blavFitIndices(hierarchical_factor_bcfa)
@@ -351,6 +343,7 @@ hierarchical_fit <- blavFitIndices(hierarchical_factor_bcfa)
 ```{r, fig.width=16/2, fig.height=9/2}
 plot(hierarchical_factor_bcfa,1:20, plot.type = "trace")
 ```
+
 ```{r}
 dpriors(hierarchical_factor_bcfa)
 ```
@@ -358,10 +351,10 @@ dpriors(hierarchical_factor_bcfa)
 ```{r}
 bcfa_compare <- blavCompare(one_factor_bcfa, hierarchical_factor_bcfa)
 ```
+
 ```{r}
 bcfa_compare
 ```
-
 
 ```{r}
 hierarchical_loo_fit <- loo(blavInspect(hierarchical_factor_bcfa, "mcobj"), save_psis = TRUE, k_threshold = 0.5)
@@ -371,13 +364,14 @@ hierarchical_loo_fit <- loo(blavInspect(hierarchical_factor_bcfa, "mcobj"), save
 plot(hierarchical_loo_fit, label_points = TRUE)
 ```
 
-
 ```{r}
 loo_moment_match(blavInspect(hierarchical_factor_bcfa, "mcobj"), hierarchical_loo_fit)
 ```
+
 ```{r}
 plot(hierarchical_loo_fit)
 ```
+
 ```{r}
 pareto_k_ids(hierarchical_loo_fit)
 ```
@@ -410,14 +404,11 @@ new_factor_bcfa <- bcfa(
   bcontrol = list(cores = 4)
   )
 ```
+
 ```{r}
 new_factor_bcfa
 ```
 
-
-
 ```{r}
 sessionInfo()
 ```
-
-
