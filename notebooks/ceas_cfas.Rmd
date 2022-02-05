@@ -1,0 +1,77 @@
+---
+title: "CEAS CFAs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(lavaan)
+library(blavaan)
+library(bayesplot)
+library(loo)
+library(semPlot)
+future::plan("multiprocess")
+```
+
+```{r}
+ceas_from <- read_feather("../results/tidy_ceas_from.feather")
+```
+
+```{r}
+ceas_from_wide <- ceas_from %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  
+```
+
+```{r}
+ceas_from_cor <- cor(ceas_from_wide %>% select(-ResponseId), method="spearman")
+ceas_from_cor
+```
+
+```{r}
+eigen(ceas_from_cor)$values
+```
+
+```{r}
+ceas_from_wide
+```
+
+```{r}
+ceas_from_model <- "CEAS_FROM =~ CEAS-FROM1_1 + CEAS-FROM1_2 + CEAS-FROM1_4 + CEAS-FROM1_5 + CEAS-FROM1_6 + CEAS-FROM1_8 + CEAS-FROM2_1 + CEAS-FROM2_2 + CEAS-FROM2_4 + CEAS-FROM2_5
+"
+
+one_factor_cfa <- cfa(
+  ceas_from_model, 
+  data=ceas_from_wide, 
+  estimator="MLR"
+  )
+one_factor_cfa
+```
+
+```{r}
+one_factor_bcfa <- bcfa(
+  pbis_model, 
+  data=pbis_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+
+one_factor_bcfa
+```
+
+```{r}
+one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+one_loo_fit
+```
+
+```{r}
+fitmeasures(one_factor_bcfa)
+```

@@ -1,0 +1,77 @@
+---
+title: "PBIS CFAs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(lavaan)
+library(blavaan)
+library(bayesplot)
+library(loo)
+library(semPlot)
+library(ggcorrplot)
+library(jtools)
+future::plan("multiprocess")
+```
+
+```{r}
+pbis <- read_feather("../results/tidy_pbis.feather")
+```
+
+```{r}
+pbis_wide <- pbis %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) 
+```
+
+```{r}
+pbis_cor <- polychoric(pbis_wide %>% select(-ResponseId))
+pbis_cor
+```
+
+```{r}
+ggcorrplot(pbis_cor$rho, ggtheme=theme_apa())
+```
+
+```{r}
+eigen(pbis_cor$rho)$values
+```
+
+```{r}
+pbis_model <- "PBIS =~ PBIS_1 + PBIS_2 + PBIS_3 + PBIS_4"
+
+one_factor_cfa <- cfa(
+  pbis_model, 
+  data=pbis_wide, 
+  estimator="MLR"
+  )
+one_factor_cfa
+```
+
+```{r}
+one_factor_bcfa <- bcfa(
+  pbis_model, 
+  data=pbis_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+
+one_factor_bcfa
+```
+
+```{r}
+one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+one_loo_fit
+```
+
+```{r}
+fitmeasures(one_factor_bcfa)
+```
