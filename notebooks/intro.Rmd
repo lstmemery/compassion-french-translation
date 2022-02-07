@@ -12,6 +12,7 @@ library(tidyverse)
 library(ggthemes)
 library(feather)
 library(lubridate)
+library(jtools)
 ```
 
 ```{r}
@@ -54,7 +55,7 @@ ordered_responses %>%
 ggplot(ordered_responses, aes(x=response)) +
   geom_bar(stat = "count") +
   facet_wrap(~item, ncol = 10) +
-  theme_few()
+  theme_apa()
 ```
 
 Looks like very few people fell for SOCS-O 5 (The attention check.) I'm
@@ -88,7 +89,7 @@ filtered_responses <- responses %>%
 ggplot(filtered_responses, aes(x=response)) +
   geom_bar(stat = "count") +
   facet_wrap(~item, ncol = 10) +
-  theme_few()
+  theme_apa()
 ```
 
 ```{r}
@@ -313,10 +314,11 @@ tidy_ceas_sc <- df %>%
   filter(!(item %in% c("CEAS-SC1_3", "CEAS-SC1_7", "CEAS-SC2_3"))) %>% 
   mutate(response = as.numeric(str_extract(response, "\\d+$"))) %>% 
   mutate(sub_scale = case_when(
-    item %in% c("CEAS-SC2_1", "CEAS-SC2_2", "CEAS-SC2_4", "CEAS-SC2_5") ~ "CEAS_S Action",
-    item %in% c("CEAS-SC1_2", "CEAS-SC1_4") ~ "CEAS_S Engagement Dimension 1",
-    item %in% c("CEAS-SC1_1", "CEAS-SC1_5", "CEAS-SC1_6", "CEAS-SC1_8") ~ "CEAS_S Engagement Dimension 2",
-  ))
+    item %in% c("CEAS-SC2_1", "CEAS-SC2_2", "CEAS-SC2_4", "CEAS-SC2_5") ~ "CEAS_S_Action",
+    item %in% c("CEAS-SC1_2", "CEAS-SC1_4") ~ "CEAS_S_Engagement_Dimension_1",
+    item %in% c("CEAS-SC1_1", "CEAS-SC1_5", "CEAS-SC1_6", "CEAS-SC1_8") ~ "CEAS_S_Engagement_Dimension_2",
+  )) %>% 
+  mutate(item = str_replace(item, "-", "_"))
 
 tidy_ceas_sc
 ```
@@ -332,8 +334,8 @@ ceas_sc_scales <- tidy_ceas_sc %>%
   summarise(sub_scale_response = sum(response)) %>% 
   filter(!is.na(sub_scale_response)) %>% 
   pivot_wider(ResponseId, names_from = sub_scale, values_from = sub_scale_response) %>% 
-  mutate(`CEAS_S Engagement` = `CEAS_S Engagement Dimension 1` + `CEAS_S Engagement Dimension 2`) %>% 
-  mutate(CEAS_S = `CEAS_S Engagement` + `CEAS_S Action`)
+  mutate(CEAS_S_Engagement = CEAS_S_Engagement_Dimension_1 + CEAS_S_Engagement_Dimension_2) %>% 
+  mutate(CEAS_S = CEAS_S_Engagement + CEAS_S_Action)
 
 ceas_sc_scales
 ```
@@ -360,9 +362,10 @@ tidy_ceas_to <- df %>%
   filter(!(item %in% c("CEAS-TO1_3", "CEAS-TO1_7", "CEAS-TO2_3"))) %>%
   mutate(response = as.numeric(str_extract(response, "\\d+$"))) %>% 
   mutate(sub_scale = case_when(
-    str_detect(item, "CEAS-TO1") ~ "CEAS_TO Engagement",
-    str_detect(item, "CEAS-TO2") ~ "CEAS_TO Action"
-  ))
+    str_detect(item, "CEAS-TO1") ~ "CEAS_TO_Engagement",
+    str_detect(item, "CEAS-TO2") ~ "CEAS_TO_Action"
+  )) %>% 
+  mutate(item = str_replace(item, "-", "_"))
 
 tidy_ceas_to
 ```
@@ -378,7 +381,7 @@ ceas_to_scales <- tidy_ceas_to %>%
   summarise(sub_scale_response = sum(response)) %>% 
   filter(!is.na(sub_scale_response)) %>% 
   pivot_wider(ResponseId, names_from = sub_scale, values_from = sub_scale_response) %>% 
-  mutate(CEAS_TO = `CEAS_TO Action` + `CEAS_TO Engagement`)
+  mutate(CEAS_TO = CEAS_TO_Action + CEAS_TO_Engagement)
 
 ceas_to_scales
 ```
@@ -399,9 +402,11 @@ tidy_ceas_from <- df %>%
   mutate(response = as.numeric(str_extract(response, "\\d+$"))) %>%
   filter(!(item %in% c("CEAS-FROM1_3", "CEAS-FROM1_7", "CEAS-FROM2_3"))) %>%
   mutate(sub_scale = case_when(
-    str_detect(item, "CEAS-FROM1") ~ "CEAS_FROM Engagement",
-    str_detect(item, "CEAS-FROM2") ~ "CEAS_FROM Action"
-  ))
+    str_detect(item, "CEAS-FROM1") ~ "CEAS_FROM_Engagement",
+    str_detect(item, "CEAS-FROM2") ~ "CEAS_FROM_Action"
+  )) %>% 
+  mutate(item = str_replace(item, "-", "_"))
+
 
 tidy_ceas_from
 ```
@@ -417,7 +422,7 @@ ceas_from_scales <- tidy_ceas_from %>%
   summarise(sub_scale_response = sum(response)) %>% 
   filter(!is.na(sub_scale_response)) %>% 
   pivot_wider(ResponseId, names_from = sub_scale, values_from = sub_scale_response) %>% 
-  mutate(CEAS_FROM = `CEAS_FROM Action` + `CEAS_FROM Engagement`)
+  mutate(CEAS_FROM = CEAS_FROM_Action + CEAS_FROM_Engagement)
 
 ceas_from_scales
 ```

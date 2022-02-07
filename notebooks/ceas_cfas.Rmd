@@ -16,8 +16,156 @@ library(blavaan)
 library(bayesplot)
 library(loo)
 library(semPlot)
-future::plan("multiprocess")
+future::plan("multisession")
 ```
+
+### CEAS-SC
+
+```{r}
+ceas_sc <- read_feather("../results/tidy_ceas_sc.feather")
+```
+
+```{r}
+ceas_sc_wide <- ceas_sc %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.)))
+
+ceas_sc_wide
+```
+
+```{r}
+ceas_sc_cor <- cor(ceas_sc_wide %>% select(-ResponseId), method="spearman")
+ceas_sc_cor
+```
+
+```{r}
+eigen(ceas_sc_cor)$values
+```
+
+```{r}
+ceas_sc_one_model <- "CEAS_SC =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8 + CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5"
+
+one_factor_cfa <- cfa(
+  ceas_sc_one_model, 
+  data=ceas_sc_wide, 
+  estimator="MLR"
+  )
+one_factor_cfa
+```
+
+```{r}
+
+if (file.exists("../models/ceas_sc_one_factor_bcfa.blav")) {
+  load("../models/ceas_sc_one_factor_bcfa.blav")
+} else {
+ceas_sc_one_factor_bcfa <- bcfa(
+  ceas_sc_one_model, 
+  data=ceas_sc_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_sc_one_factor_bcfa, file="../models/ceas_sc_one_factor_bcfa.blav")
+}
+
+ceas_sc_one_factor_bcfa
+```
+
+```{r}
+one_loo_fit <- loo(blavInspect(ceas_sc_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+one_loo_fit
+```
+
+```{r}
+fitmeasures(ceas_sc_one_factor_bcfa)
+```
+
+```{r}
+ceas_sc_level_one_model <- "
+CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+"
+
+ceas_sc_level_one_cfa <- cfa(
+  ceas_sc_level_one_model, 
+  data=ceas_sc_wide, 
+  estimator="MLR"
+  )
+ceas_sc_level_one_cfa
+```
+
+```{r}
+if (file.exists("../models/ceas_sc_level_one_bcfa.blav")) {
+  load("../models/ceas_sc_level_one_bcfa.blav")
+} else {
+ceas_sc_level_one_bcfa <- bcfa(
+  ceas_sc_level_one_model, 
+  data=ceas_sc_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_sc_level_one_bcfa, file="../models/ceas_sc_level_one_bcfa.blav")
+}
+
+ceas_sc_level_one_bcfa
+```
+
+```{r}
+one_loo_fit <- loo(blavInspect(ceas_sc_level_one_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+one_loo_fit
+```
+
+```{r}
+fitmeasures(ceas_sc_level_one_bcfa)
+```
+
+```{r}
+ceas_sc_level_two_model <- "
+CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
+CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Engagement =~ CEAS_SC_Engagement_1
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+"
+
+ceas_sc_level_two_cfa <- cfa(
+  ceas_sc_level_two_model, 
+  data=ceas_sc_wide, 
+  estimator="MLR"
+  )
+ceas_sc_level_two_cfa
+```
+
+```{r}
+if (file.exists("../models/ceas_sc_level_two_bcfa.blav")) {
+  load("../models/ceas_sc_level_two_bcfa.blav")
+} else {
+ceas_sc_level_two_bcfa <- bcfa(
+  ceas_sc_level_two_model, 
+  data=ceas_sc_wide,
+  burnin = 1000,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_sc_level_two_bcfa, file="../models/ceas_sc_level_two_bcfa.blav")
+}
+
+ceas_sc_level_two_bcfa
+```
+
+```{r}
+ceas_sc_level_two_loo_fit <- loo(blavInspect(ceas_sc_level_two_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+ceas_sc_level_two_loo_fit
+```
+
+```{r}
+fitmeasures(ceas_sc_level_two_bcfa)
+```
+
+### CEAS-FROM
 
 ```{r}
 ceas_from <- read_feather("../results/tidy_ceas_from.feather")
@@ -26,8 +174,7 @@ ceas_from <- read_feather("../results/tidy_ceas_from.feather")
 ```{r}
 ceas_from_wide <- ceas_from %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  filter_all(all_vars(!is.na(.))) %>% 
-  
+  filter_all(all_vars(!is.na(.)))
 ```
 
 ```{r}
@@ -40,38 +187,66 @@ eigen(ceas_from_cor)$values
 ```
 
 ```{r}
-ceas_from_wide
-```
-
-```{r}
-ceas_from_model <- "CEAS_FROM =~ CEAS-FROM1_1 + CEAS-FROM1_2 + CEAS-FROM1_4 + CEAS-FROM1_5 + CEAS-FROM1_6 + CEAS-FROM1_8 + CEAS-FROM2_1 + CEAS-FROM2_2 + CEAS-FROM2_4 + CEAS-FROM2_5
+ceas_from_one_model <- "CEAS_FROM =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8 + CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
 "
 
-one_factor_cfa <- cfa(
-  ceas_from_model, 
-  data=ceas_from_wide, 
-  estimator="MLR"
-  )
-one_factor_cfa
-```
-
-```{r}
-one_factor_bcfa <- bcfa(
-  pbis_model, 
-  data=pbis_wide,
+if (file.exists("../models/ceas_from_one_factor_bcfa.blav")) {
+  load("../models/ceas_from_one_factor_bcfa.blav")
+} else {
+ceas_from_one_bcfa <- bcfa(
+  ceas_from_one_model, 
+  data=ceas_from_wide,
   n.chains = 4,
   seed = 12345,
   bcontrol = list(cores = 4)
   )
+save(ceas_from_one_bcfa, file="../models/one_factor_bcfa.blav")
+}
 
-one_factor_bcfa
+ceas_from_one_bcfa
 ```
 
 ```{r}
-one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-one_loo_fit
+ceas_from_one_bcfa_loo <- loo(blavInspect(ceas_from_one_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+ceas_from_one_bcfa_loo
 ```
 
 ```{r}
-fitmeasures(one_factor_bcfa)
+fitmeasures(ceas_from_one_bcfa)
 ```
+
+```{r}
+ceas_from_level_one_model <- "
+CEAS_FROM_Engagement =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8
+CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
+CEAS_FROM =~ CEAS_FROM_Engagement + CEAS_FROM_Action
+"
+```
+
+```{r}
+if (file.exists("../models/ceas_from_level_one_bcfa.blav")) {
+  load("../models/ceas_from_level_one_bcfa.blav")
+} else {
+ceas_from_level_one_bcfa <- bcfa(
+  ceas_from_level_one_model, 
+  data=ceas_from_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_from_level_one_bcfa, file="../models/ceas_from_level_one_bcfa.blav")
+}
+
+ceas_from_level_one_bcfa
+```
+
+```{r}
+ceas_from_level_one_loo_fit <- loo(blavInspect(ceas_from_level_one_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+ceas_from_level_one_loo_fit
+```
+
+```{r}
+fitmeasures(ceas_from_level_one_bcfa)
+```
+
+### CEAS-TO
