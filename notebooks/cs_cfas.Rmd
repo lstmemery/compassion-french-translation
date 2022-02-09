@@ -1,0 +1,239 @@
+---
+title: "CS CFAs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(lavaan)
+library(blavaan)
+library(bayesplot)
+library(loo)
+library(semPlot)
+future::plan("multisession")
+```
+
+```{r}
+cs <- read_feather("../results/tidy_cs.feather")
+```
+
+```{r}
+cs_wide <- cs %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.)))
+
+cs_wide
+```
+
+```{r}
+cs_cor <- polychoric(cs_wide)
+cs_cor
+```
+
+```{r}
+eigen(cs_cor$rho)$values
+```
+
+### CS Kind
+
+```{r}
+cs_kind_model <- "CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14"
+```
+
+```{r}
+if (file.exists("../models/cs_kind_one_factor_bcfa.blav")) {
+  load("../models/cs_kind_one_factor_bcfa.blav")
+} else {
+cs_kind_one_factor_bcfa <- bcfa(
+  cs_kind_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_kind_one_factor_bcfa, file="../models/cs_kind_one_factor_bcfa.blav")
+}
+
+cs_kind_one_factor_bcfa
+```
+
+```{r}
+cs_kind_loo_fit <- loo(blavInspect(cs_kind_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_kind_loo_fit
+```
+
+```{r}
+fitmeasures(cs_kind_one_factor_bcfa)
+```
+
+### CS Common Humanity
+
+```{r}
+cs_common_humanity_model <- "CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16"
+```
+
+```{r}
+if (file.exists("../models/cs_common_humanity_one_factor_bcfa.blav")) {
+  load("../models/cs_common_humanity_one_factor_bcfa.blav")
+} else {
+cs_common_humanity_one_factor_bcfa <- bcfa(
+  cs_common_humanity_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_common_humanity_one_factor_bcfa, file="../models/cs_common_humanity_one_factor_bcfa.blav")
+}
+
+cs_common_humanity_one_factor_bcfa
+```
+
+```{r}
+cs_common_humanity_loo_fit <- loo(blavInspect(cs_common_humanity_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_common_humanity_loo_fit
+```
+
+```{r}
+fitmeasures(cs_common_humanity_one_factor_bcfa)
+```
+
+## CS Mindfulness
+
+```{r}
+cs_mindfulness_model <- "CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13"
+```
+
+```{r}
+if (file.exists("../models/cs_mindfulness_one_factor_bcfa.blav")) {
+  load("../models/cs_mindfulness_one_factor_bcfa.blav")
+} else {
+cs_mindfulness_one_factor_bcfa <- bcfa(
+  cs_mindfulness_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_mindfulness_one_factor_bcfa, file="../models/cs_mindfulness_one_factor_bcfa.blav")
+}
+
+cs_mindfulness_one_factor_bcfa
+```
+
+```{r}
+cs_mindfulness_loo_fit <- loo(blavInspect(cs_mindfulness_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_mindfulness_loo_fit
+```
+
+```{r}
+fitmeasures(cs_mindfulness_one_factor_bcfa)
+```
+
+## CS Indifference
+
+```{r}
+cs_indifference_model <- "CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15"
+```
+
+```{r}
+if (file.exists("../models/cs_indifference_one_factor_bcfa.blav")) {
+  load("../models/cs_indifference_one_factor_bcfa.blav")
+} else {
+cs_indifference_one_factor_bcfa <- bcfa(
+  cs_indifference_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_indifference_one_factor_bcfa, file="../models/cs_indifference_one_factor_bcfa.blav")
+}
+
+cs_indifference_one_factor_bcfa
+```
+
+```{r}
+cs_indifference_loo_fit <- loo(blavInspect(cs_indifference_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_indifference_loo_fit
+```
+
+```{r}
+fitmeasures(cs_indifference_one_factor_bcfa)
+```
+
+## CS One Factor
+
+```{r}
+cs_one_model <- "CS =~ CS_1 + CS_2 + CS_3 + CS_4 + CS_5 + CS_6 + CS_7 + CS_8 + CS_9 + CS_10 + CS_11 + CS_12 + CS_13 + CS_14 + CS_15 + CS_16"
+```
+
+```{r}
+if (file.exists("../models/cs_one_factor_bcfa.blav")) {
+  load("../models/cs_one_factor_bcfa.blav")
+} else {
+cs_one_factor_bcfa <- bcfa(
+  cs_one_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_one_factor_bcfa, file="../models/cs_one_factor_bcfa.blav")
+}
+
+cs_one_factor_bcfa
+```
+
+```{r}
+cs_one_loo_fit <- loo(blavInspect(cs_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_one_loo_fit
+```
+
+```{r}
+fitmeasures(cs_one_factor_bcfa)
+```
+
+## CS Level One
+
+```{r}
+cs_level_one_model <- "
+CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14
+CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16
+CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13
+CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15
+CS =~ CS_Kind + CS_Common_Humanity + CS_Mindfulness + CS_Indifference
+"
+```
+
+```{r}
+if (file.exists("../models/cs_level_one_factor_bcfa.blav")) {
+  load("../models/cs_level_one_factor_bcfa.blav")
+} else {
+cs_level_one_factor_bcfa <- bcfa(
+  cs_level_one_model, 
+  data=cs_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(cs_level_one_factor_bcfa, file="../models/cs_level_one_factor_bcfa.blav")
+}
+
+cs_level_one_factor_bcfa
+```
+
+```{r}
+cs_level_one_loo_fit <- loo(blavInspect(cs_level_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+cs_level_one_loo_fit
+```
+
+```{r}
+fitmeasures(cs_level_one_factor_bcfa)
+```

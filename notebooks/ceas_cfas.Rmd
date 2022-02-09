@@ -200,7 +200,7 @@ ceas_from_one_bcfa <- bcfa(
   seed = 12345,
   bcontrol = list(cores = 4)
   )
-save(ceas_from_one_bcfa, file="../models/one_factor_bcfa.blav")
+save(ceas_from_one_bcfa, file="../models/ceas_from_one_factor_bcfa.blav")
 }
 
 ceas_from_one_bcfa
@@ -250,3 +250,85 @@ fitmeasures(ceas_from_level_one_bcfa)
 ```
 
 ### CEAS-TO
+
+```{r}
+ceas_to <- read_feather("../results/tidy_ceas_to.feather")
+```
+
+```{r}
+ceas_to_wide <- ceas_to %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.)))
+```
+
+```{r}
+ceas_to_cor <- cor(ceas_to_wide %>% select(-ResponseId), method="spearman")
+ceas_to_cor
+```
+
+```{r}
+eigen(ceas_to_cor)$values
+```
+
+```{r}
+ceas_to_one_model <- "CEAS_TO =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8 + CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+"
+
+if (file.exists("../models/ceas_to_one_factor_bcfa.blav")) {
+  load("../models/ceas_to_one_factor_bcfa.blav")
+} else {
+ceas_to_one_bcfa <- bcfa(
+  ceas_to_one_model, 
+  data=ceas_to_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_to_one_bcfa, file="../models/ceas_to_one_factor_bcfa.blav")
+}
+
+ceas_to_one_bcfa
+```
+
+```{r}
+ceas_to_one_bcfa_loo <- loo(blavInspect(ceas_to_one_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+ceas_to_one_bcfa_loo
+```
+
+```{r}
+fitmeasures(ceas_to_one_bcfa)
+```
+
+```{r}
+ceas_to_level_one_model <- "
+CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
+CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+CEAS_TO =~ CEAS_TO_Engagement + CEAS_TO_Action
+"
+```
+
+```{r}
+if (file.exists("../models/ceas_to_level_one_bcfa.blav")) {
+  load("../models/ceas_to_level_one_bcfa.blav")
+} else {
+ceas_to_level_one_bcfa <- bcfa(
+  ceas_to_level_one_model, 
+  data=ceas_to_wide,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4)
+  )
+save(ceas_to_level_one_bcfa, file="../models/ceas_to_level_one_bcfa.blav")
+}
+
+ceas_to_level_one_bcfa
+```
+
+```{r}
+ceas_to_level_one_loo_fit <- loo(blavInspect(ceas_to_level_one_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
+ceas_to_level_one_loo_fit
+```
+
+```{r}
+fitmeasures(ceas_to_level_one_bcfa)
+```
