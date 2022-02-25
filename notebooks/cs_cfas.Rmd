@@ -16,6 +16,7 @@ library(blavaan)
 library(bayesplot)
 library(loo)
 library(semPlot)
+library(coda)
 future::plan("multisession")
 ```
 
@@ -40,10 +41,22 @@ cs_cor
 eigen(cs_cor$rho)$values
 ```
 
+```{r}
+describe(cs_wide)
+```
+
 ### CS Kind
 
 ```{r}
 cs_kind_model <- "CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14"
+```
+
+```{r}
+dpriors(tau = "normal(0,.5)")
+```
+
+```{r}
+summary(cs_kind_one_factor_bcfa)
 ```
 
 ```{r}
@@ -53,6 +66,7 @@ if (file.exists("../models/cs_kind_one_factor_bcfa.blav")) {
 cs_kind_one_factor_bcfa <- bcfa(
   cs_kind_model, 
   data=cs_wide,
+  dp=dpriors(tau = "normal(0,.5)"),
   n.chains = 4,
   seed = 12345,
   bcontrol = list(cores = 4)
@@ -61,6 +75,15 @@ save(cs_kind_one_factor_bcfa, file="../models/cs_kind_one_factor_bcfa.blav")
 }
 
 cs_kind_one_factor_bcfa
+```
+
+```{r}
+plot(cs_kind_one_factor_bcfa, pars = 1:4, plot.type = "trace")
+```
+
+```{r}
+cs_kind_one_factor_posteriors <- blavInspect(cs_kind_one_factor_bcfa, what="mcmc")
+gelman.diag(cs_kind_one_factor_posteriors)
 ```
 
 ```{r}

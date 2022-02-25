@@ -82,7 +82,8 @@ filtered_responses <- responses %>%
     item %in% c("SOCS-O_3", "SOCS-O_8", "SOCS-O_13", "SOCS-O_18") ~ "SOCS_O_Feeling_Suffering",
     item %in% c("SOCS-O_4", "SOCS-O_9", "SOCS-O_14", "SOCS-O_19") ~ "SOCS_O_Tolerating_Feelings",
     item %in% c("SOCS-O_5", "SOCS-O_10", "SOCS-O_15", "SOCS-O_20") ~ "SOCS_O_Acting_To_Alleviate"
-  ))
+  )) %>% 
+  mutate(item = str_replace(item, "-", "_"))
 ```
 
 ```{r, fig.width=16, fig.height=9}

@@ -21,13 +21,292 @@ library(blavaan)
 future::plan("multisession")
 library(bayesplot)
 library(loo)
-options(mc.cores = 4)
+library(coda)
+library(rstan)
+options(mc.cores = 4, future.globals.maxSize=Inf)
+rstan_options(auto_write = TRUE)
+```
+
+```{r}
+socs <- read_feather("../results/tidy_filtered_responses.feather")
+```
+
+```{r}
+socs_o_wide <- socs %>% 
+  filter(str_detect(item, "SOCS_O")) %>% 
+  mutate(response = as.numeric(response)) %>%
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.)))
+
+socs_o_wide
+```
+
+```{r}
+describe(socs_o_wide)
+```
+
+```{r}
+socs_o_cor <- polychoric(socs_o_wide)
+socs_o_cor
+```
+
+```{r}
+ggcorrplot(socs_o_cor$rho, ggtheme=theme_few()) +
+  scale_fill_viridis()
+```
+
+```{r}
+eigen(socs_o_cor$rho)$values
 ```
 
 ```{r}
 df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
   mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
 df
+```
+
+```{r}
+socs_o_level_two_model <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
+tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
+'
+socs_o_level_two_model
+```
+
+```{r}
+if (file.exists("../models/ord_socs_o_level_two_bcfa.blav")) {
+  load("../models/ord_socs_o_level_two_bcfa.blav")
+} else {
+ord_socs_o_level_two_bcfa <- bcfa(
+  socs_o_level_two_model, 
+  data=socs_o_wide,
+  mcmcfile = TRUE,
+  save.lvs = TRUE,
+  dp=dpriors(tau = "normal(0,.5)"),
+  burnin = 2000,
+  sample = 16000,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4),
+  mcmcextra = list(monitor = c("Lambda_y_free", "Gamma_free", "B_free", "Theta_sd_free", "Theta_r_free", "Psi_sd_free", "Psi_r_mat", "Psi_r_free", "Tau_ufree", "z_aug", "ly_sign", "bet_sign", "g_sign",
+ "Theta_cov", "Theta_var", "Psi_cov", "Psi_var", "Nu_free", "Alpha_free", 
+ "Tau_free", "log_lik", "log_lik_sat", "ppp"))
+  )
+save(ord_socs_o_level_two_bcfa, file="../models/ord_socs_o_level_two_large_bcfa.blav")
+}
+
+ord_socs_o_level_two_bcfa
+```
+
+```{r}
+summary(ord_socs_o_level_two_bcfa)
+```
+
+```{r}
+ord_socs_o_level_two_posteriors <- blavInspect(ord_socs_o_level_two_bcfa, what="mcmc")
+gelman.diag(ord_socs_o_level_two_posteriors)
+```
+
+```{r}
+summary(ord_socs_o_level_two_bcfa)
+```
+
+```{r}
+ord_socs_o_level_two_fit <- blavFitIndices(ord_socs_o_level_two_bcfa)
+summary(ord_socs_o_level_two_fit)
+```
+
+```{r}
+ord_socs_o_level_two_bcfa
+```
+
+```{r}
+# stanfit
+ord_socs_o_level_two_mcobj <- blavInspect(ord_socs_o_level_two_bcfa, "mcobj")
+```
+
+```{r}
+ord_socs_o_level_two_loo <- rstan::loo(ord_socs_o_level_two_mcobj, moment_match=TRUE)
+```
+
+```{r}
+# create a named list of draws for use with rstan methods
+.rstan_relist <- function(x, skeleton) {
+  out <- utils::relist(x, skeleton)
+  for (i in seq_along(skeleton)) {
+    dim(out[[i]]) <- dim(skeleton[[i]])
+  }
+  out
+}
+
+# rstan helper function to get dims of parameters right
+.create_skeleton <- function(pars, dims) {
+  out <- lapply(seq_along(pars), function(i) {
+    len_dims <- length(dims[[i]])
+    if (len_dims < 1) return(0)
+    return(array(0, dim = dims[[i]]))
+  })
+  names(out) <- pars
+  out
+}
+
+# extract original posterior draws
+post_draws_stanfit <- function(x, ...) {
+  as.matrix(x)
+}
+
+# compute a matrix of log-likelihood values for the ith observation
+# matrix contains information about the number of MCMC chains
+log_lik_i_stanfit <- function(x, i, parameter_name = "log_lik", ...) {
+  loo::extract_log_lik(x, parameter_name, merge_chains = FALSE)[, , i]
+}
+
+# transform parameters to the unconstraint space
+unconstrain_pars_stanfit <- function(x, pars, ...) {
+  skeleton <- .create_skeleton(x@sim$pars_oi, x@par_dims[x@sim$pars_oi])
+  upars <- apply(pars, 1, FUN = function(theta) {
+    rstan::unconstrain_pars(x, .rstan_relist(theta, skeleton))
+  })
+  # for one parameter models
+  if (is.null(dim(upars))) {
+    dim(upars) <- c(1, length(upars))
+  }
+  t(upars)
+}
+
+# compute log_prob for each posterior draws on the unconstrained space
+log_prob_upars_stanfit <- function(x, upars, ...) {
+  apply(upars, 1, rstan::log_prob, object = x,
+        adjust_transform = TRUE, gradient = FALSE)
+}
+
+# compute log_lik values based on the unconstrained parameters
+log_lik_i_upars_stanfit <- function(x, upars, i, parameter_name = "log_lik",
+                                  ...) {
+  S <- nrow(upars)
+  out <- numeric(S)
+  for (s in seq_len(S)) {
+    out[s] <- rstan::constrain_pars(x, upars = upars[s, ])[[parameter_name]][i]
+  }
+  out
+}
+
+loo::loo_moment_match.default(
+  x = ord_socs_o_level_two_mcobj,
+  loo = ord_socs_o_level_two_loo,
+  post_draws = post_draws_stanfit,
+  log_lik_i = log_lik_i_stanfit,
+  unconstrain_pars = unconstrain_pars_stanfit,
+  log_prob_upars = log_prob_upars_stanfit,
+  log_lik_i_upars = log_lik_i_upars_stanfit
+)
+```
+
+```{r}
+ord_socs_o_level_two_mcobj@.MISC$stan_fit_instance$unconstrained_param_names(FALSE, FALSE)
+```
+
+```{r}
+expose_stan_functions(ord_socs_o_level_two_mcobj)
+```
+
+```{r}
+plot(ord_socs_o_level_two_bcfa, pars = 15:24, plot.type = "trace")
+```
+
+```{r}
+pareto_k_ids(ord_socs_o_level_two_loo_fit, threshold=1)
+```
+
+```{r}
+pareto_k_values(ord_socs_o_level_two_loo_fit)[214]
+```
+
+```{r}
+socs_o_wide %>% 
+  slice(214)
+```
+
+```{r}
+loo_moment_match(blavInspect(ord_socs_o_level_two_bcfa, "mcobj"), loo=ord_socs_o_level_two_loo_fit)
+```
+
+```{r}
+ord_socs_o_level_two_mcobj <- blavInspect(ord_socs_o_level_two_bcfa, "mcobj")
+```
+
+```{r}
+fitmeasures(ord_socs_o_level_two_bcfa)
+```
+
+```{r}
+socs_o_level_one_model <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
+tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+'
+socs_o_level_one_model
+```
+
+```{r}
+if (file.exists("../models/ord_socs_o_level_one_bcfa.blav")) {
+  load("../models/ord_socs_o_level_one_bcfa.blav")
+} else {
+ord_socs_o_level_one_bcfa <- bcfa(
+  socs_o_level_one_model, 
+  data=socs_o_wide,
+  mcmcfile = TRUE,
+  save.lvs = TRUE,
+  dp=dpriors(tau = "normal(0,.5)"),
+  # burnin = 2000,
+  # sample = 16000,
+  n.chains = 4,
+  seed = 12345,
+  bcontrol = list(cores = 4),
+  mcmcextra = list(monitor = c("Lambda_y_free", "Gamma_free", "B_free", "Theta_sd_free", "Theta_r_free", "Psi_sd_free", "Psi_r_mat", "Psi_r_free", "Tau_ufree", "z_aug", "ly_sign", "bet_sign", "g_sign",
+ "Theta_cov", "Theta_var", "Psi_cov", "Psi_var", "Nu_free", "Alpha_free", 
+ "Tau_free", "log_lik", "log_lik_sat", "ppp"))
+  )
+save(ord_socs_o_level_one_bcfa, file="../models/ord_socs_o_level_one_bcfa.blav")
+}
+
+ord_socs_o_level_one_bcfa
+```
+
+```{r}
+ord_socs_o_level_one_loo <- rstan::loo(blavInspect(ord_socs_o_level_one_bcfa, "mcobj"), moment_match=TRUE)
+ord_socs_o_level_one_loo
+```
+
+```{r}
+plot(ord_socs_o_level_one_bcfa, pars = 1:16, plot.type = "trace")
+```
+
+```{r}
+ord_socs_o_level_one_mcmc <- blavInspect(ord_socs_o_level_one_bcfa, what = "mcmc")
+gelman.diag(ord_socs_o_level_one_mcmc)
+```
+
+```{r}
+gelman.plot(ord_socs_o_level_one_mcmc)
+```
+
+```{r}
+geweke.plot(ord_socs_o_level_one_mcmc)
+```
+
+```{r}
+ord_socs_o_level_one_fit <- blavFitIndices(ord_socs_o_level_one_bcfa)
+```
+
+```{r}
+loo(blavInspect(ord_socs_o_level_one_bcfa, "mcobj"), save_psis = TRUE, moment_match = TRUE)
 ```
 
 ## SOCS-O
