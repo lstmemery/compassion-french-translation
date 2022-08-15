@@ -17,6 +17,7 @@ library(ggthemes)
 library(semTools)
 library(ggcorrplot)
 library(viridis)
+library(huxtable)
 ```
 
 ```{r}
@@ -25,16 +26,13 @@ df <- read_feather("../results/tidy_filtered_responses.feather") %>%
 df
 ```
 
-
-
-
 ```{r}
 socs_s_df <- df %>% 
   mutate(response = as.numeric(response)) %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  select(starts_with("SOCS-S")) %>% 
+  select(starts_with("SOCS_S")) %>% 
   rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
-  filter_all(all_vars(!is.na(.))) 
+  drop_na()
 
 socs_s_df
 ```
@@ -47,6 +45,7 @@ socs_s
 ```{r}
 eigen(socs_s$rho)$values
 ```
+
 Positive semidefinite
 
 ## One-factor model
@@ -56,8 +55,8 @@ one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_df), collapse 
 one_factor_model
 ```
 
-(How should I deal with non-responses? Possibly use SEM)
-(I am going to remove them for now and then use MICE)
+(How should I deal with non-responses? Possibly use SEM) (I am going to
+remove them for now and then use MICE)
 
 ```{r}
 one_factor_cfa <- cfa(
@@ -67,9 +66,18 @@ one_factor_cfa <- cfa(
   )
 one_factor_cfa
 ```
+
 ```{r}
 one_factor_glance <- glance(one_factor_cfa)
 one_factor_glance
+```
+
+```{r}
+one_factor_glance <- fitmeasures(
+  one_factor_cfa, 
+  fit.measures = "all") %>% 
+  stack() %>% 
+  pivot_wider(names_from = "ind", values_from = "values")
 ```
 
 ```{r}
@@ -90,31 +98,28 @@ five_factor_cfa <- cfa(
   )
 five_factor_cfa
 ```
+
 ```{r}
-five_factor_glance <- glance(five_factor_cfa)
-five_factor_glance
+five_factor_glance <- fitmeasures(
+  five_factor_cfa, 
+  fit.measures = "all") %>% 
+  stack() %>% 
+  pivot_wider(names_from = "ind", values_from = "values")
 ```
+
 ```{r}
 socs_s_parameter_estimates <- tidy(five_factor_cfa)
 socs_s_parameter_estimates
 ```
-
-
 
 ```{r}
 ggcorrplot(socs_s$rho, ggtheme=theme_few()) +
   scale_fill_viridis()
 ```
 
-
-
-
-
 ```{r}
 cov2cor(lavInspect(five_factor_cfa, "cov.lv"))
 ```
-
-
 
 ```{r}
 hierarchical_factor_model <- '
@@ -136,22 +141,55 @@ hierarchical_factor_cfa <- cfa(
   )
 hierarchical_factor_cfa
 ```
+
 ```{r}
-hierarchical_factor_glance <- glance(hierarchical_factor_cfa)
-hierarchical_factor_glance
+hierarchical_factor_glance <- fitmeasures(
+  hierarchical_factor_cfa, 
+  fit.measures = "all") %>% 
+  stack() %>% 
+  pivot_wider(names_from = "ind", values_from = "values")
 ```
 
 ```{r}
-bind_rows(
+# hierarchical_factor_glance <- glance(hierarchical_factor_cfa)
+# hierarchical_factor_glance
+```
+
+```{r}
+socs_s_comparision <- bind_rows(
   one_factor_glance,
   five_factor_glance,
   hierarchical_factor_glance
 )
+
+socs_s_comparision
 ```
 
+```{r}
+round_amount <- 3
+
+socs_huxtable <- socs_s_comparision %>% 
+  transmute(
+    Model = c("One Factor", "Five Factor", "Five-factor hierarchical"),
+    CFI = round(cfi, round_amount),
+    `RMSEA [90% C.I.]` = str_c(round(rmsea, round_amount), " [", round(rmsea.ci.lower, round_amount), ", ", round(rmsea.ci.upper, round_amount), "]"),
+    NNFI = round(nnfi, round_amount),
+    SRMR = round(srmr, round_amount),
+    `χ² (df)` = str_c(round(chisq), " (", df, ")"),
+    AIC = round(aic)
+    ) %>% 
+  as_huxtable(autoformat=FALSE) %>% 
+  theme_article() %>% 
+  set_number_format(value=fmt_pretty(big.mark = "")) %>% 
+  quick_docx(file="socs_s_model_comparsion.docx")
+```
+
+```{r}
+socs_s_comparision %>% 
+  transmute(round(aic, 2))
+```
 
 ## Internal Reliability (Total Scale)
-
 
 ```{r}
 summary(alpha(socs_s_df))
@@ -160,11 +198,6 @@ summary(alpha(socs_s_df))
 ```{r}
 socs_s_omega <- omegaFromSem(five_factor_cfa)
 ```
-```{r}
-
-```
-
-
 
 ## Ceiling and Floor Effects
 
@@ -174,7 +207,7 @@ total_scores <- df %>%
   group_by(ResponseId) %>% 
   mutate(any_nas = any(is.na(response))) %>% 
   filter(any_nas == FALSE) %>% 
-  filter(str_detect(item, "SOCS-S")) %>% 
+  filter(str_detect(item, "SOCS_S")) %>% 
   summarise(total = sum(response))
 
 total_scores
@@ -190,7 +223,25 @@ ggplot(total_scores, aes(x=total)) +
 total_scores %>% 
   filter(total == 100)
 ```
+
 ```{r}
 sessionInfo()
 ```
 
+```{r}
+huxtable(
+        number_format = c(
+          "Default",
+          "NA",
+          "2",
+          "\"%5.2f\"",
+          "Pretty",
+          "Sign"
+        ),
+        a = rep(1000, 6),
+        b = rep(1000.005, 6),
+        c = rep(0.0001, 6),
+        d = rep(-1, 6),
+        e = rep("3.2 (s.e. 1.4)", 6)
+      )
+```

@@ -1,0 +1,42 @@
+---
+title: "Demographics"
+output: word_document
+date: '2022-02-25'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+```
+
+```{r}
+df <- read_feather("../results/tidy_demographics.feather")
+```
+
+```{r}
+demo_count_table <- df %>% 
+  select(-ResponseId) %>% 
+  count(dem_item, dem_value) %>% 
+  group_by(dem_item) %>% 
+  mutate(total = sum(n)) %>% 
+  mutate(proportion = n/total) %>% 
+  select(-total) %>% 
+  mutate(proportion = round(proportion*100, 2)) %>% 
+  mutate(dem_item = str_wrap(dem_item, 50)) %>% 
+  rename(
+    Item = dem_item, 
+    Response = dem_value, 
+    Count = n,
+    Proportion = proportion
+    )
+
+demo_count_table
+```
+
+```{r}
+knitr::kable(demo_count_table)
+```

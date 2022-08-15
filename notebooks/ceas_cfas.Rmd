@@ -332,3 +332,7 @@ ceas_to_level_one_loo_fit
 ```{r}
 fitmeasures(ceas_to_level_one_bcfa)
 ```
+
+```{r}
+blavFitIndices(ceas_to_level_one_bcfa)
+```

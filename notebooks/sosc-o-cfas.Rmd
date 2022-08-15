@@ -127,6 +127,7 @@ ord_socs_o_level_two_bcfa
 ```{r}
 # stanfit
 ord_socs_o_level_two_mcobj <- blavInspect(ord_socs_o_level_two_bcfa, "mcobj")
+ord_socs_o_level_two_mcobj
 ```
 
 ```{r}
