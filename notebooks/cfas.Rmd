@@ -181,7 +181,7 @@ socs_huxtable <- socs_s_comparision %>%
   as_huxtable(autoformat=FALSE) %>% 
   theme_article() %>% 
   set_number_format(value=fmt_pretty(big.mark = "")) %>% 
-  quick_docx(file="socs_s_model_comparsion.docx")
+  quick_docx(file="socs_s_model_comparsion.docx", open = FALSE)
 ```
 
 ```{r}
@@ -197,6 +197,10 @@ summary(alpha(socs_s_df))
 
 ```{r}
 socs_s_omega <- omegaFromSem(five_factor_cfa)
+```
+
+```{r}
+socs_s_omega
 ```
 
 ## Ceiling and Floor Effects
@@ -226,22 +230,4 @@ total_scores %>%
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-huxtable(
-        number_format = c(
-          "Default",
-          "NA",
-          "2",
-          "\"%5.2f\"",
-          "Pretty",
-          "Sign"
-        ),
-        a = rep(1000, 6),
-        b = rep(1000.005, 6),
-        c = rep(0.0001, 6),
-        d = rep(-1, 6),
-        e = rep("3.2 (s.e. 1.4)", 6)
-      )
 ```
