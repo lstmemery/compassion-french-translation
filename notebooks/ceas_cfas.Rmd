@@ -18,6 +18,7 @@ library(loo)
 library(semPlot)
 future::plan("multisession")
 source("funcs.R")
+library(knitr)
 ```
 
 ### CEAS-SC
@@ -35,8 +36,12 @@ ceas_sc_wide
 ```
 
 ```{r}
-ceas_sc_cor <- cor(ceas_sc_wide %>% select(-ResponseId), method="spearman")
+ceas_sc_cor <- round(cor(ceas_sc_wide %>% select(-ResponseId), method="spearman"), 2)
 ceas_sc_cor
+```
+
+```{r}
+kable(ceas_sc_cor)
 ```
 
 ```{r}
@@ -208,7 +213,9 @@ bind_rows(
   ceas_to_two_fit,
   ceas_to_level_one_fit
 ) %>% 
-  format_huxtable("../results/ceas-cfas.docx")
+  as_huxtable(autoformat=FALSE) %>% 
+    theme_article() %>% 
+    set_number_format(value=fmt_pretty(big.mark = ""))
 ```
 
 ```{r}

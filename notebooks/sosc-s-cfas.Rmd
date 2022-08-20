@@ -19,6 +19,11 @@ library(ggcorrplot)
 library(viridis)
 library(huxtable)
 library(semPlot)
+library(ggcorrplot)
+library(jtools)
+library(polycor)
+library(knitr)
+source("funcs.R")
 ```
 
 ```{r}
@@ -40,14 +45,15 @@ socs_s_df
 
 ```{r}
 socs_s <- polychoric(socs_s_df)
-socs_s
+```
+
+```{r, fig.width=16/2, fig.height=9/2}
+format_correlation(socs_s$rho, "SOCS-S Polychoric")
 ```
 
 ```{r}
 eigen(socs_s$rho)$values
 ```
-
-Positive semidefinite
 
 ## One-factor model
 
@@ -65,7 +71,6 @@ one_factor_cfa <- cfa(
   data=socs_s_df, 
   estimator="MLR"
   )
-one_factor_cfa
 ```
 
 ```{r}
@@ -84,7 +89,7 @@ one_factor_sem_plot <- semPaths(
   fade = FALSE, 
   nCharNodes = 4, 
   )
-title("Test")
+title("SOCS-S One Factor")
 ```
 
 ```{r}
