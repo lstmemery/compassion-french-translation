@@ -5,19 +5,34 @@ library(stringr)
 library(huxtable)
 library(ggcorrplot)
 library(jtools)
+library(semPlot)
 
 
-fit_cfa <- function
-
-lav_fit_measures <- function(model, df, model_name, item_scale) {
-  round_amount <- 2
-  size <- nrow(df)
-  fit_model <- cfa(
+fit_cfa <- function(model, df) {
+  cfa(
     model, 
     data=df,
     estimator="MLR",
     std.lv=TRUE
   )
+}
+
+format_cfa_parameters <- function(model) {
+  parameterestimates(
+    model, 
+    standardized = TRUE,
+    remove.eq = TRUE,
+    zstat = FALSE,
+    remove.system.eq = TRUE,
+    remove.nonfree = TRUE
+  ) %>% 
+    mutate(across(where(is.numeric), ~round(., 2)))
+}
+
+lav_fit_measures <- function(fit_model, df, item_scale, model_name) {
+  round_amount <- 2
+  size <- nrow(df)
+
   model_fit_model <- fitmeasures(fit_model, fit.measures = "all") %>% 
     stack() %>% 
     pivot_wider(names_from = "ind", values_from = "values")
@@ -40,7 +55,7 @@ lav_fit_measures <- function(model, df, model_name, item_scale) {
     )
 }
 
-format_sem_paths <- function(fit_model, model_name, item_scale) {
+format_sem_paths <- function(fit_model, item_scale, model_name) {
   semPaths(
     fit_model, 
     what = "std", 
@@ -59,7 +74,14 @@ format_sem_paths <- function(fit_model, model_name, item_scale) {
   title(str_c(item_scale, model_name, sep=" "))
 }
 
-format_huxtable <- function(df, output) {
+format_huxtable <- function(df) {
+  df %>% 
+    as_huxtable(autoformat=FALSE) %>% 
+    theme_article() %>% 
+    set_number_format(value=fmt_pretty(big.mark = ""))
+}
+
+format_huxtable2 <- function(df, output) {
   df %>% 
     as_huxtable(autoformat=FALSE) %>% 
     theme_article() %>% 
