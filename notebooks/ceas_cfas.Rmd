@@ -50,82 +50,48 @@ ceas_sc_one_fit
 ```
 
 ```{r}
+ceas_sc_two_model <- "
+CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+"
+
+ceas_sc_two_fit <- lav_fit_measures(ceas_sc_two_model, ceas_sc_wide, "Two Factor", "CEAS-SC")
+ceas_sc_two_fit
+```
+
+```{r}
 ceas_sc_level_one_model <- "
 CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
 CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
 "
 
-ceas_sc_level_one_fit <- lav_fit_measures(ceas_sc_level_one_model, ceas_sc_wide, "First Order", "CEAS-SC")
+ceas_sc_level_one_fit <- lav_fit_measures(ceas_sc_level_one_model, ceas_sc_wide, "Second Order", "CEAS-SC")
 ceas_sc_level_one_fit
+```
+
+```{r}
+ceas_sc_three_model <- "
+CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
+CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+"
+
+ceas_sc_three_fit <- lav_fit_measures(ceas_sc_three_model, ceas_sc_wide, "Three Factor", "CEAS-SC")
+ceas_sc_three_fit
 ```
 
 ```{r}
 ceas_sc_level_two_model <- "
 CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
 CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
-CEAS_SC_Engagement =~ CEAS_SC_Engagement_1 + CEAS_SC_Engagement_2
+CEAS_SC_Engagement =~ 1*CEAS_SC_Engagement_1 + 1*CEAS_SC_Engagement_2
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
-CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+CEAS_SC =~ 1*CEAS_SC_Engagement + 1*CEAS_SC_Action
 "
 
-ceas_sc_level_two_fit <- lav_fit_measures(ceas_sc_level_two_model, ceas_sc_wide, "Second Order", "CEAS-SC")
+ceas_sc_level_two_fit <- lav_fit_measures(ceas_sc_level_two_model, ceas_sc_wide, "Third Order (Equal Loadings)", "CEAS-SC")
 ceas_sc_level_two_fit
-
-fit_model <- cfa(
-    ceas_sc_level_two_model, 
-    data=ceas_sc_wide,
-    estimator="MLR",
-    std.lv=TRUE
-  )
-
-summary(fit_model)
-```
-
-```{r}
-ceas_sc_bifactor <- "
-CEAS_SC_Engagement=~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8 + CEAS_SC1_2 + CEAS_SC1_4
-CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
-CEAS_SC =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8 + CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
-"
-
-ceas_sc_bifactor_fit <- lav_fit_measures(ceas_sc_bifactor, ceas_sc_wide, "Second Order", "CEAS-SC")
-ceas_sc_bifactor_fit
-
-fit_model <- cfa(
-    ceas_sc_bifactor,
-    data=ceas_sc_wide,
-    estimator="MLR",
-    std.lv=TRUE
-  )
-
-summary(fit_model)
-```
-
-```{r}
-ceas_sc_level_two_bcfa <- bcfa(
-  ceas_sc_level_two_model, 
-  data=ceas_sc_wide,
-  dp=dpriors(tau = "normal(0,.5)"),
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4),
-  sample = 10000
-  )
-
-
-```
-
-```{r}
-ceas_sc_level_two_bcfa_fit <- fitmeasures(ceas_sc_level_two_bcfa)
-```
-
-```{r}
-loo(blavInspect(ceas_sc_level_two_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5, moment_match = TRUE)
-```
-
-```{r}
-fitmeasures(ceas_sc_level_two_bcfa)
 ```
 
 ### CEAS-FROM
@@ -158,13 +124,23 @@ ceas_from_one_fit
 ```
 
 ```{r}
+ceas_from_two_model <- "
+CEAS_FROM_Engagement =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8
+CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
+"
+
+ceas_from_two_fit <- lav_fit_measures(ceas_from_two_model, ceas_from_wide, "Two Factor", "CEAS-FROM")
+ceas_from_two_fit
+```
+
+```{r}
 ceas_from_level_one_model <- "
 CEAS_FROM_Engagement =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8
 CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
 CEAS_FROM =~ CEAS_FROM_Engagement + CEAS_FROM_Action
 "
 
-ceas_from_level_one_fit <- lav_fit_measures(ceas_from_level_one_model, ceas_from_wide, "First Order", "CEAS-FROM")
+ceas_from_level_one_fit <- lav_fit_measures(ceas_from_level_one_model, ceas_from_wide, "Second Order", "CEAS-FROM")
 ceas_from_level_one_fit
 ```
 
@@ -198,20 +174,43 @@ ceas_to_one_fit
 ```
 
 ```{r}
+ceas_to_two_factor_model <- "
+CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
+CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+"
+
+ceas_to_two_fit <- lav_fit_measures(ceas_to_two_factor_model, ceas_to_wide, "Two Factor", "CEAS-TO")
+ceas_to_two_fit
+```
+
+```{r}
 ceas_to_level_one_model <- "
 CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
 CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
-CEAS_TO =~ CEAS_TO_Engagement + CEAS_TO_Action
+CEAS_TO =~ 1*CEAS_TO_Engagement + 1*CEAS_TO_Action
 "
 
-ceas_to_level_one_fit <- lav_fit_measures(ceas_to_level_one_model, ceas_to_wide, "First Order", "CEAS-TO")
+ceas_to_level_one_fit <- lav_fit_measures(ceas_to_level_one_model, ceas_to_wide, "Second Order (Equal Loadings)", "CEAS-TO")
 ceas_to_level_one_fit
+```
 
-fit_model <- cfa(
-    ceas_to_level_one_model, 
-    data=ceas_to_wide,
-    estimator="MLR",
-    std.lv=TRUE
-  )
-summary(fit_model)
+```{r}
+bind_rows(
+  ceas_sc_one_fit,
+  ceas_sc_two_fit,
+  ceas_sc_level_one_fit,
+  ceas_sc_three_fit,
+  ceas_sc_level_two_fit,
+  ceas_from_one_fit,
+  ceas_from_two_fit,
+  ceas_from_level_one_fit,
+  ceas_to_one_fit,
+  ceas_to_two_fit,
+  ceas_to_level_one_fit
+) %>% 
+  format_huxtable("../results/ceas-cfas.docx")
+```
+
+```{r}
+sessionInfo()
 ```
