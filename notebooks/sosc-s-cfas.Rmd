@@ -1,10 +1,27 @@
 ---
 title: "SOCS-S Initial CFA"
-output: word_document
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+   - \usepackage{array}
+   - \usepackage{caption}
+   - \usepackage{graphicx}
+   - \usepackage{siunitx}
+   - \usepackage[normalem]{ulem}
+   - \usepackage{colortbl}
+   - \usepackage{multirow}
+   - \usepackage{hhline}
+   - \usepackage{calc}
+   - \usepackage{tabularx}
+   - \usepackage{threeparttable}
+   - \usepackage{wrapfig}
+   - \usepackage{adjustbox}
+   - \usepackage{hyperref}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r}
@@ -14,24 +31,23 @@ library(psych)
 source("funcs.R")
 ```
 
+## Correlation
+
 ```{r}
 df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
   mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
-df
 ```
 
-```{r}
+```{r, make_df}
 socs_s_df <- df %>% 
   mutate(response = as.numeric(response)) %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
   select(starts_with("SOCS_S")) %>% 
   rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
   drop_na()
-
-socs_s_df
 ```
 
-```{r}
+```{r, corrlation}
 socs_s <- polychoric(socs_s_df)
 ```
 
