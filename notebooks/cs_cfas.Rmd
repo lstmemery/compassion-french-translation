@@ -1,6 +1,8 @@
 ---
 title: "CS CFAs"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,13 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(feather)
 library(psych)
-library(lavaan)
-library(blavaan)
-library(bayesplot)
-library(loo)
-library(semPlot)
-library(coda)
-future::plan("multisession")
+source("funcs.R")
 ```
 
 ```{r}
@@ -27,7 +23,7 @@ cs <- read_feather("../results/tidy_cs.feather")
 ```{r}
 cs_wide <- cs %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  filter_all(all_vars(!is.na(.)))
+  filter_all(all_vars(!is.na(.))) 
 
 cs_wide
 ```
@@ -37,196 +33,198 @@ cs_cor <- polychoric(cs_wide)
 cs_cor
 ```
 
+```{r, fig.width=16/2, fig.height=9/2}
+format_correlation(cs_cor$rho, "CS Polychoric")
+```
+
 ```{r}
 eigen(cs_cor$rho)$values
 ```
 
 ```{r}
-describe(cs_wide)
+scale_name <- "CS Kind"
+df <- cs_wide
 ```
 
-### CS Kind
+## One-factor model
 
 ```{r}
-cs_kind_model <- "CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14"
-```
-
-```{r}
-dpriors(tau = "normal(0,.5)")
-```
-
-```{r}
-summary(cs_kind_one_factor_bcfa)
+model_name <- "One Factor"
+model_string <- "CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14"
+model_string
 ```
 
 ```{r}
-if (file.exists("../models/cs_kind_one_factor_bcfa.blav")) {
-  load("../models/cs_kind_one_factor_bcfa.blav")
-} else {
-cs_kind_one_factor_bcfa <- bcfa(
-  cs_kind_model, 
-  data=cs_wide,
-  dp=dpriors(tau = "normal(0,.5)"),
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_kind_one_factor_bcfa, file="../models/cs_kind_one_factor_bcfa.blav")
-}
-
-cs_kind_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-plot(cs_kind_one_factor_bcfa, pars = 1:4, plot.type = "trace")
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-cs_kind_one_factor_posteriors <- blavInspect(cs_kind_one_factor_bcfa, what="mcmc")
-gelman.diag(cs_kind_one_factor_posteriors)
+format_sem_paths(cfa_fit, scale_name, model_name)
 ```
 
 ```{r}
-cs_kind_loo_fit <- loo(blavInspect(cs_kind_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_kind_loo_fit
+format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
 ```{r}
-fitmeasures(cs_kind_one_factor_bcfa)
+cs_kind_one_fit <- fit_measure
 ```
 
 ### CS Common Humanity
 
 ```{r}
-cs_common_humanity_model <- "CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16"
+scale_name <- "CS Common Humanity"
+model_string <- "CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16"
 ```
 
 ```{r}
-if (file.exists("../models/cs_common_humanity_one_factor_bcfa.blav")) {
-  load("../models/cs_common_humanity_one_factor_bcfa.blav")
-} else {
-cs_common_humanity_one_factor_bcfa <- bcfa(
-  cs_common_humanity_model, 
-  data=cs_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_common_humanity_one_factor_bcfa, file="../models/cs_common_humanity_one_factor_bcfa.blav")
-}
-
-cs_common_humanity_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-cs_common_humanity_loo_fit <- loo(blavInspect(cs_common_humanity_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_common_humanity_loo_fit
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-fitmeasures(cs_common_humanity_one_factor_bcfa)
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+cs_common_humanity_one_fit <- fit_measure
 ```
 
 ## CS Mindfulness
 
 ```{r}
-cs_mindfulness_model <- "CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13"
+scale_name <- "CS Mindfulness"
+model_string <- "CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13"
 ```
 
 ```{r}
-if (file.exists("../models/cs_mindfulness_one_factor_bcfa.blav")) {
-  load("../models/cs_mindfulness_one_factor_bcfa.blav")
-} else {
-cs_mindfulness_one_factor_bcfa <- bcfa(
-  cs_mindfulness_model, 
-  data=cs_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_mindfulness_one_factor_bcfa, file="../models/cs_mindfulness_one_factor_bcfa.blav")
-}
-
-cs_mindfulness_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-cs_mindfulness_loo_fit <- loo(blavInspect(cs_mindfulness_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_mindfulness_loo_fit
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-fitmeasures(cs_mindfulness_one_factor_bcfa)
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+cs_mindfulness_one_fit <- fit_measure
 ```
 
 ## CS Indifference
 
 ```{r}
-cs_indifference_model <- "CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15"
+scale_name <- "CS Indifference"
+model_string <- "CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15"
 ```
 
 ```{r}
-if (file.exists("../models/cs_indifference_one_factor_bcfa.blav")) {
-  load("../models/cs_indifference_one_factor_bcfa.blav")
-} else {
-cs_indifference_one_factor_bcfa <- bcfa(
-  cs_indifference_model, 
-  data=cs_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_indifference_one_factor_bcfa, file="../models/cs_indifference_one_factor_bcfa.blav")
-}
-
-cs_indifference_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-cs_indifference_loo_fit <- loo(blavInspect(cs_indifference_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_indifference_loo_fit
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-fitmeasures(cs_indifference_one_factor_bcfa)
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+cs_indifference_one_fit <- fit_measure
 ```
 
 ## CS One Factor
 
 ```{r}
+scale_name <- "CS"
 cs_one_model <- "CS =~ CS_1 + CS_2 + CS_3 + CS_4 + CS_5 + CS_6 + CS_7 + CS_8 + CS_9 + CS_10 + CS_11 + CS_12 + CS_13 + CS_14 + CS_15 + CS_16"
 ```
 
 ```{r}
-if (file.exists("../models/cs_one_factor_bcfa.blav")) {
-  load("../models/cs_one_factor_bcfa.blav")
-} else {
-cs_one_factor_bcfa <- bcfa(
-  cs_one_model, 
-  data=cs_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_one_factor_bcfa, file="../models/cs_one_factor_bcfa.blav")
-}
-
-cs_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-cs_one_loo_fit <- loo(blavInspect(cs_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_one_loo_fit
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-fitmeasures(cs_one_factor_bcfa)
+format_sem_paths(cfa_fit, scale_name, model_name)
 ```
 
-## CS Level One
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
 
 ```{r}
-cs_level_one_model <- "
+cs_indifference_one_fit <- fit_measure
+```
+
+## CS Four Factor
+
+```{r}
+model_name <- "Four Factor"
+model_string <- "
+CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14
+CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16
+CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13
+CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15
+"
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+cs_four_factor_fit <- fit_measure
+```
+
+## CS Second Order
+
+```{r}
+model_name <- "Second Order"
+model_string <- "
 CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14
 CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16
 CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13
@@ -236,27 +234,39 @@ CS =~ CS_Kind + CS_Common_Humanity + CS_Mindfulness + CS_Indifference
 ```
 
 ```{r}
-if (file.exists("../models/cs_level_one_factor_bcfa.blav")) {
-  load("../models/cs_level_one_factor_bcfa.blav")
-} else {
-cs_level_one_factor_bcfa <- bcfa(
-  cs_level_one_model, 
-  data=cs_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-save(cs_level_one_factor_bcfa, file="../models/cs_level_one_factor_bcfa.blav")
-}
-
-cs_level_one_factor_bcfa
+cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-cs_level_one_loo_fit <- loo(blavInspect(cs_level_one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-cs_level_one_loo_fit
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-fitmeasures(cs_level_one_factor_bcfa)
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+cs_second_order_fit <- fit_measure
+```
+
+```{r}
+socs_o_comparision <- bind_rows(
+  cs_kind_one_fit,
+  cs_common_humanity_one_fit,
+  cs_mindfulness_one_fit,
+  cs_indifference_one_fit,
+  cs_four_factor_fit,
+  cs_second_order_fit
+)
+
+format_huxtable(socs_o_comparision)
+```
+
+```{r}
+sessionInfo()
 ```

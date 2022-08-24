@@ -1,0 +1,231 @@
+---
+title: "SOCS-O Initial CFA"
+output:
+  word_document: default
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+- \usepackage{array}
+- \usepackage{caption}
+- \usepackage{graphicx}
+- \usepackage{siunitx}
+- \usepackage[normalem]{ulem}
+- \usepackage{colortbl}
+- \usepackage{multirow}
+- \usepackage{hhline}
+- \usepackage{calc}
+- \usepackage{tabularx}
+- \usepackage{threeparttable}
+- \usepackage{wrapfig}
+- \usepackage{adjustbox}
+- \usepackage{hyperref}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(effectsize)
+source("funcs.R")
+```
+
+## Correlation
+
+```{r}
+socs <- read_feather("../results/tidy_filtered_responses.feather")
+```
+
+```{r}
+socs_o_wide <- socs %>% 
+  filter(str_detect(item, "SOCS_O")) %>% 
+  mutate(response = as.numeric(response)) %>%
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.)))
+```
+
+```{r, correlation}
+socs_o <- polychoric(socs_o_wide)
+```
+
+```{r, fig.width=16/2, fig.height=9/2}
+format_correlation(socs_o$rho, "SOCS-O Polychoric")
+```
+
+```{r}
+eigen(socs_o$rho)$values
+```
+
+```{r}
+scale_name <- "SOCS-O"
+df <- socs_o_wide
+```
+
+## One-factor model
+
+```{r}
+model_name <- "One Factor"
+model_string <- str_c("compassion =~ ", str_c(colnames(df), collapse = " + "))
+model_string
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+socs_o_one_fit <- fit_measure
+```
+
+## SOCS-O Five Factor Model
+
+```{r}
+model_name <- "Five Factor"
+model_string <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
+tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+'
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+lavInspect(cfa_fit, "cov.lv")
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+socs_o_five_fit <- fit_measure
+```
+
+## SOCS-O Four Factor Model
+
+```{r}
+model_name <- "Four Factor"
+model_string <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering_tolerating_discomfort =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18 + SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+'
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+socs_o_four_fit <- fit_measure
+```
+
+## SOCS-O Second Order Model
+
+```{r}
+model_name <- "Second Order (Equal Loadings)"
+model_string <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
+tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+compassion =~ 1*recognizing_suffering + 1*universality_of_suffering + 1*feeling_of_suffering + 1*tolerating_discomfort + 1*alleviate_suffering
+'
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+socs_o_second_order_fit <- fit_measure
+```
+
+```{r}
+socs_o_comparision <- bind_rows(
+  socs_o_one_fit,
+  socs_o_five_fit,
+  socs_o_four_fit,
+  socs_o_second_order_fit
+)
+
+format_huxtable(socs_o_comparision)
+```
+
+```{r}
+sessionInfo()
+```

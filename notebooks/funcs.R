@@ -6,6 +6,7 @@ library(huxtable)
 library(ggcorrplot)
 library(jtools)
 library(semPlot)
+library(effectsize)
 
 
 fit_cfa <- function(model, df) {
@@ -98,4 +99,14 @@ format_correlation <- function(corr, title) {
     legend.title = "Correlation",
     lab =TRUE,
   )
+}
+
+interpret_fit <- function(cfa_fit) {
+  interpret(cfa_fit) %>% 
+    filter(Name %in% c("CFI", "NNFI", "RMSEA", "SRMR")) %>% 
+    mutate(Interpretation = case_when(
+      Name == "RMSEA" & Value > 0.05 & Value < 0.08 ~ "satisfactory",
+      Name == "RMSEA" & Value < 0.05 ~ "good",
+      TRUE ~ as.character(Interpretation)
+    ))
 }

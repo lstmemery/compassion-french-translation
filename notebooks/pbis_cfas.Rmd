@@ -11,14 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(feather)
 library(psych)
-library(lavaan)
-library(blavaan)
-library(bayesplot)
-library(loo)
-library(semPlot)
-library(ggcorrplot)
-library(jtools)
-future::plan("multiprocess")
+source("funcs.R")
 ```
 
 ```{r}
@@ -31,47 +24,68 @@ pbis_wide <- pbis %>%
   filter_all(all_vars(!is.na(.))) 
 ```
 
-```{r}
-pbis_cor <- polychoric(pbis_wide %>% select(-ResponseId))
-pbis_cor
+```{r, correlation}
+pbis <- polychoric(pbis_wide)
+```
+
+```{r, fig.width=16/2, fig.height=9/2}
+format_correlation(pbis$rho, "PBIS Polychoric")
 ```
 
 ```{r}
-ggcorrplot(pbis_cor$rho, ggtheme=theme_apa())
+eigen(pbis$rho)$values
 ```
 
 ```{r}
-eigen(pbis_cor$rho)$values
+scale_name <- "PBIS"
+df <- pbis_wide
+```
+
+## One-factor model
+
+```{r}
+model_name <- "One Factor"
+model_string <- "compassion =~ PBIS_1 + PBIS_2 + PBIS_3 + PBIS_4"
+model_string
 ```
 
 ```{r}
-pbis_model <- "PBIS =~ PBIS_1 + PBIS_2 + PBIS_3 + PBIS_4"
+cfa_fit <- fit_cfa(model_string, df)
+```
 
-one_factor_cfa <- cfa(
-  pbis_model, 
-  data=pbis_wide, 
-  estimator="MLR"
+```{r}
+model_fit_model <- fitmeasures(cfa_fit)
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    
+    std.lv=TRUE
   )
-one_factor_cfa
+summary(cfa_fit)
+fitmeasures(cfa_fit)
 ```
 
 ```{r}
-one_factor_bcfa <- bcfa(
-  pbis_model, 
-  data=pbis_wide,
-  n.chains = 4,
-  seed = 12345,
-  bcontrol = list(cores = 4)
-  )
-
-one_factor_bcfa
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
 ```
 
 ```{r}
-one_loo_fit <- loo(blavInspect(one_factor_bcfa, "mcobj"), save_psis=TRUE, k_threshold = 0.5)
-one_loo_fit
+format_sem_paths(cfa_fit, scale_name, model_name)
 ```
 
 ```{r}
-fitmeasures(one_factor_bcfa)
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+pbis_one_fit <- fit_measure
+```
+
+```{r}
+sessionInfo()
 ```
