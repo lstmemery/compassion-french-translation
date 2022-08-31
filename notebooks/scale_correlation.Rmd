@@ -35,9 +35,9 @@ cor_row_names <- row.names(df_cor)
 
 df_cor %>% 
   as_tibble() %>% 
-  mutate(row_name = cor_row_names) %>% 
-  filter(str_detect(row_name, "SOCS")) %>% 
-  select(row_name, !contains("SOCS"))
+  mutate(row_name = cor_row_names)
+  # filter(str_detect(row_name, "SOCS")) %>% 
+  # select(row_name, !contains("SOCS"))
 ```
 
 ```{r, fig.width=16/4, fig.height=9/4}
@@ -51,22 +51,21 @@ all_scale_cor <- corr.test(all_scales %>% select(-ResponseId))
 ```
 
 ```{r}
+
 clean_cor <- all_scale_cor$r %>% 
   as_tibble() %>% 
   mutate_all(~round(., 2)) %>% 
-  mutate(row_name = cor_row_names) %>% 
-  filter(str_detect(row_name, "SOCS")) %>% 
-  select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
-
-clean_cor
+  mutate(row_name = cor_row_names)
+  # filter(str_detect(row_name, "SOCS")) %>% 
+  # select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
 ```
 
 ```{r}
 p_values <- all_scale_cor$p %>% 
-  as_tibble() %>% 
-  mutate(row_name = cor_row_names) %>% 
-  filter(str_detect(row_name, "SOCS")) %>% 
-  select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
+  as_tibble() 
+  # mutate(row_name = cor_row_names)
+  # filter(str_detect(row_name, "SOCS")) %>% 
+  # select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
 
 p_col <- ncol(p_values)
 p_row <- nrow(p_values)
@@ -79,19 +78,19 @@ p_stars <- p_values %>%
     . > 0.001 ~ "**",
     TRUE ~ "***"
     )))
-
-p_stars
-
 ```
 
 ```{r}
-cor_names <- colnames(clean_cor)[2:ncol(clean_cor)]
+results <- map_dfc(cor_row_names, ~paste0(clean_cor[[.]], p_stars[[.]]))
+colnames(results)<-cor_row_names
+final_results <- results %>% 
+  mutate(Scale = cor_row_names) %>% 
+  select(Scale, everything())
+```
 
-results <- map_dfc(cor_names, ~paste0(clean_cor[[.]], p_stars[[.]]))
-colnames(results) <- cor_names
-results %>% 
-  mutate(SOCS = clean_cor[[1]]) %>% 
-  select(SOCS, everything())
+```{r}
+final_results %>% 
+  write_csv("../results/scale_correlation.csv")
 ```
 
 ```{r}

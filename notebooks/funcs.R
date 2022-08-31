@@ -7,7 +7,18 @@ library(ggcorrplot)
 library(jtools)
 library(semPlot)
 library(effectsize)
+library(psych)
 
+
+get_alpha <- function(df) {
+  alpha_df <- df %>%
+    pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+    drop_na() %>% 
+    select(-ResponseId) %>% 
+    alpha() 
+  
+  alpha_df[["total"]][["raw_alpha"]]
+}
 
 fit_cfa <- function(model, df) {
   cfa(

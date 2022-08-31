@@ -1,6 +1,8 @@
 ---
 title: "PBIS CFAs"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(feather)
 library(psych)
+library(effectsize)
 source("funcs.R")
 ```
 
@@ -21,7 +24,8 @@ pbis <- read_feather("../results/tidy_pbis.feather")
 ```{r}
 pbis_wide <- pbis %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  filter_all(all_vars(!is.na(.))) 
+  filter_all(all_vars(!is.na(.))) %>% 
+  select(-ResponseId)
 ```
 
 ```{r, correlation}
@@ -50,23 +54,16 @@ model_string
 ```
 
 ```{r}
-cfa_fit <- fit_cfa(model_string, df)
-```
-
-```{r}
-model_fit_model <- fitmeasures(cfa_fit)
-```
-
-```{r}
 cfa_fit <- cfa(
     model_string, 
     data=df,
-    estimator="MLR",
-    
+    estimator="ML",
     std.lv=TRUE
   )
-summary(cfa_fit)
-fitmeasures(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
 ```
 
 ```{r}
