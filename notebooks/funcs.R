@@ -8,6 +8,40 @@ library(jtools)
 library(semPlot)
 library(effectsize)
 library(psych)
+library(jtools)
+library(viridis)
+
+
+
+remove_nas <- function(df) {
+  no_nas <- df %>% 
+    pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+    drop_na()
+  
+  df %>% 
+    semi_join(no_nas, by = "ResponseId")
+}
+
+plot_response_distribution <- function(df) {
+  
+  if ("sub_scale" %in% colnames(df)) {
+    ggplot(df, aes(x =as.factor(response), fill=sub_scale)) +
+      geom_bar() +
+      facet_wrap(~item) +
+      labs(x="Response", fill="Sub Scale", y="Count") +
+      theme_apa() +
+      scale_fill_viridis(discrete=TRUE, option = "H") +
+      theme(legend.position = "bottom") +
+      guides(fill=guide_legend(ncol = 2))
+  } else {
+    ggplot(df, aes(x =as.ordered(response))) +
+      geom_bar() +
+      facet_wrap(~item) +
+      labs(x="Response", y="Count") +
+      theme_apa()
+  }
+  
+}
 
 
 get_alpha <- function(df) {

@@ -1,0 +1,300 @@
+---
+title: "Alpha"
+output:
+  word_document: default
+  html_document: default
+date: "2022-08-31"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.asp=0.8)
+```
+
+```{r}
+library(tidyverse)
+library(psych)
+library(feather)
+source("funcs.R")
+```
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ceas_from.feather"))
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+## CEAS-FROM
+
+```{r}
+get_alpha(df)
+```
+
+### CEAS_FROM_Engagement
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_FROM_Engagement"))
+```
+
+### CEAS_FROM_Action
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_FROM_Action"))
+```
+
+## CEAS-SC
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ceas_sc.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### CEAS_S\_Action
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_S_Action"))
+```
+
+### CEAS_S\_Engagement_Dimension_1
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_S_Engagement_Dimension_1"))
+```
+
+### CEAS_S\_Engagement_Dimension_2
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_S_Engagement_Dimension_2"))
+```
+
+## CEAS-TO
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ceas_to.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### CEAS_TO_Action
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_TO_Action"))
+```
+
+### CEAS_TO_Engagement
+
+```{r}
+get_alpha(filter(df, sub_scale == "CEAS_TO_Engagement"))
+```
+
+## CS
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_cs.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### CS_Common_Humanity
+
+```{r}
+get_alpha(filter(df, sub_scale == "CS_Common_Humanity"))
+```
+
+### CS_Indifference_Reverse
+
+```{r}
+get_alpha(filter(df, sub_scale == "CS_Indifference_Reverse"))
+```
+
+### CS_Kind
+
+```{r}
+get_alpha(filter(df, sub_scale == "CS_Kind"))
+```
+
+### CS_Mindfulness
+
+```{r}
+get_alpha(filter(df, sub_scale == "CS_Mindfulness"))
+```
+
+## DASS-21
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_dass.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### DASS_21_Anxiety
+
+```{r}
+get_alpha(filter(df, sub_scale == "DASS_21_Anxiety"))
+```
+
+### DASS_21_Depression
+
+```{r}
+get_alpha(filter(df, sub_scale == "DASS_21_Depression"))
+```
+
+### DASS_21_Somatization
+
+```{r}
+get_alpha(filter(df, sub_scale == "DASS_21_Somatization"))
+```
+
+## ECR
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ecr.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+## ECR_Anxiety
+
+```{r}
+get_alpha(filter(df, sub_scale == "ECR_Anxiety"))
+```
+
+## ECR_Avoidance
+
+```{r}
+get_alpha(filter(df, sub_scale == "ECR_Avoidance"))
+```
+
+## FFMQ
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ffmq.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### FFMQ_Describe
+
+```{r}
+get_alpha(filter(df, sub_scale == "FFMQ_Describe"))
+```
+
+### FFMQ_Nonreactivity
+
+```{r}
+get_alpha(filter(df, sub_scale == "FFMQ_Nonreactivity"))
+```
+
+### FFMQ_Nonjudgement
+
+```{r}
+get_alpha(filter(df, sub_scale == "FFMQ_Nonjudgement"))
+```
+
+### FFMQ_Nonreactivity
+
+```{r}
+get_alpha(filter(df, sub_scale == "FFMQ_Nonreactivity"))
+```
+
+### FFMQ_Observe
+
+```{r}
+get_alpha(filter(df, sub_scale == "FFMQ_Observe"))
+```
+
+## PBIS
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_pbis.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+## SCS
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_scs.feather"))
+
+df <- df %>% 
+  mutate(response = if_else(scale_valence == "Negative", 6 - response, response))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+### SCS_Common_Humanity
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Common_Humanity"))
+```
+
+### SCS_Isolation
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Isolation"))
+```
+
+### SCS_Mindfulness
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Mindfulness"))
+```
+
+### SCS_Overidentification
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Overidentification"))
+```
+
+### SCS_Self_Judgement
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Self_Judgement"))
+```
+
+### SCS_Self_Kindness
+
+```{r}
+get_alpha(filter(df, sub_scale == "SCS_Self_Kindness"))
+```
+
+## WEMWBS
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_wemwbs.feather"))
+get_alpha(df)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+```{r}
+sessionInfo()
+```

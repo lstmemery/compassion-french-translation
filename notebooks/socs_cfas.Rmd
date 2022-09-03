@@ -1,0 +1,47 @@
+---
+title: "SOCS CFAs"
+output: html_document
+date: "2022-08-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(lavaan)
+library(psych)
+library(broom)
+library(ggthemes)
+library(semTools)
+library(ggcorrplot)
+library(viridis)
+library(huxtable)
+```
+
+```{r}
+df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
+  mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+df
+```
+
+```{r}
+socs_s_df <- df %>% 
+  mutate(response = as.numeric(response)) %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  select(starts_with("SOCS_S")) %>% 
+  rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
+  drop_na()
+
+socs_s_df
+```
+
+```{r}
+one_factor_model <- str_c("compassion =~ ", str_c(colnames(socs_s_df), collapse = " + "))
+```
+
+```{r}
+sessionInfo()
+```
