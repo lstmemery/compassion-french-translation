@@ -5,12 +5,14 @@ date: '2022-02-25'
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r}
 library(tidyverse)
 library(feather)
+library(jtools)
+library(scales)
 ```
 
 ```{r}
@@ -33,10 +35,225 @@ demo_count_table <- df %>%
     Count = n,
     Proportion = proportion
     )
+```
 
-demo_count_table
+## Age
+
+```{r}
+age_df <- df %>% 
+  filter(dem_item == "DEM9") %>% 
+  drop_na() %>% 
+  mutate(dem_value = as.numeric(dem_value))
+
+age_df %>% 
+  summarise(
+    mean_age = mean(dem_value),
+    age_sd = sd(dem_value),
+    min_age = min(dem_value),
+    max_age = max(dem_value),
+    count = n()
+    ) %>% 
+  knitr::kable()
 ```
 
 ```{r}
-knitr::kable(demo_count_table)
+ggplot(age_df, aes(x = dem_value)) +
+  geom_histogram(bins=15) +
+  theme_apa() +
+  labs(x="Age", y="Count")
+```
+
+## Gender
+
+```{r}
+gender_df <- df %>% 
+  filter(dem_item == "DEM10") %>% 
+  drop_na() %>% 
+  mutate(dem_value = case_when(
+    dem_value == "Féminin" ~ "Female",
+    dem_value == "Masculin" ~ "Male",
+    TRUE ~ "Non-Binary/Genderfluid"
+  ))
+```
+
+```{r}
+demo_count_table %>% 
+  filter(Item == "DEM10") %>% 
+  mutate(Response = case_when(
+    Response == "Féminin" ~ "Female",
+    Response == "Masculin" ~ "Male",
+    TRUE ~ "Non-Binary/Genderfluid"
+  )) %>% 
+  ungroup() %>% 
+  select(-Item) %>% 
+  knitr::kable()
+  
+```
+
+```{r}
+ggplot(gender_df, aes(x = dem_value)) +
+  geom_bar() +
+  theme_apa() +
+  labs(x="Gender", y="Count")
+```
+
+### Other Responses
+
+```{r}
+df %>% 
+  filter(dem_item == "DEM10_3_TEXT") %>% 
+  drop_na() %>% 
+  knitr::kable()
+```
+
+## Number of Languages Spoken
+
+```{r}
+language_df <- df %>% 
+  filter(dem_item == "DEM7") %>% 
+  drop_na() %>% 
+  mutate(dem_value = as.numeric(dem_value))
+
+language_df %>% 
+  summarise(
+    mean_num_languages = mean(dem_value),
+    num_languages_sd = sd(dem_value),
+    min_num_languages = min(dem_value),
+    max_num_languages = max(dem_value),
+    count = n()
+    ) %>% 
+  knitr::kable()
+```
+
+```{r}
+ggplot(language_df, aes(x = as.ordered(dem_value))) +
+  geom_bar() +
+  theme_apa() +
+  labs(x="Number of Languages", y="Count")
+```
+
+## Where was French learned?
+
+```{r}
+language_origin_df <- df %>% 
+  filter(dem_item == "DEM2") %>% 
+  drop_na()
+```
+
+```{r}
+other_language_origins_df <- df %>% 
+  filter(dem_item == "DEM2_2_TEXT") %>% 
+  drop_na() %>% 
+  mutate(translation = case_when(
+    str_detect(str_to_lower(dem_value), "france") ~ "France",
+    str_detect(str_to_lower(dem_value), "écosse") ~ "Canada (ex. Quebec)",
+    str_detect(str_to_lower(dem_value), "ontario") ~ "Canada (ex. Quebec)",
+    str_detect(str_to_lower(dem_value), "maroc") ~ "Africa",
+    str_detect(str_to_lower(dem_value), "algérie") ~ "Africa",
+    str_detect(str_to_lower(dem_value), "congo") ~ "Africa",
+    str_detect(str_to_lower(dem_value), "cameroun") ~ "Africa",
+    str_detect(str_to_lower(dem_value), "tunisie") ~ "Africa",
+    TRUE ~ "Other"
+    )) %>% 
+  select(ResponseId, translation)
+
+other_language_origins_df %>% 
+  count() %>% 
+  knitr::kable()
+```
+
+```{r}
+clean_language_origin_df <- language_origin_df %>% 
+  mutate(dem_value = if_else(dem_value == "Autre (veuillez préciser)", NA_character_, "Quebec")) %>% 
+  left_join(other_language_origins_df, by = "ResponseId") %>% 
+  mutate(response = coalesce(dem_value, translation, "Other")) %>% 
+  count(response, name="Count") %>% 
+  arrange(desc(Count))
+
+clean_language_origin_df %>% 
+  mutate(total = sum(Count)) %>% 
+  mutate(Proprortion = round((Count / total) *100, 2)) %>% 
+  select(-total, Response = response) %>% 
+  knitr::kable()
+```
+
+```{r}
+ggplot(clean_language_origin_df, aes(x = factor(response, levels = response), y =Count)) +
+  geom_bar(stat="identity") +
+  theme_apa() +
+  labs(x="Where did you learn French?", y="Count") +
+  scale_x_discrete(labels = wrap_format(10))
+```
+
+## Ethnicity
+
+```{r}
+ethnicity_df <- df %>% 
+  filter(dem_item == "DEM11") %>% 
+  drop_na() %>% 
+  mutate(translation = case_when(
+    str_detect(str_to_lower(dem_value), "blan") ~ "White",
+    str_detect(str_to_lower(dem_value), "caucasi") ~ "White",
+    dem_value == "B’anc" ~ "White",
+    dem_value == "causasien" ~ "White",
+    TRUE ~ "Other"
+    ))
+```
+
+```{r}
+ethnicity_df %>% 
+  count(translation, name="Count") %>% 
+  mutate(total = sum(Count)) %>% 
+  mutate(Proprortion = round((Count / total) *100, 2)) %>%  
+  select(-total, Response = translation) %>% 
+  arrange(desc(Count)) %>% 
+  knitr::kable()
+```
+
+```{r}
+ggplot(ethnicity_df, aes(x = translation)) +
+  geom_bar() +
+  theme_apa() +
+  labs(x="Ethnicity", y="Count")
+```
+
+### Other Ethnicities
+
+```{r}
+ethnicity_df %>% 
+  filter(translation == "Other") %>% 
+  select(dem_value) %>% 
+  knitr::kable()
+```
+
+## Education Level
+
+```{r}
+education_df <- read_csv("../data/english_demographics.csv") %>% 
+  select(DEM16)
+```
+
+```{r}
+education_count_df <- education_df %>% 
+  drop_na() %>% 
+  count(DEM16, name="Count") %>% 
+  mutate(total = sum(Count)) %>% 
+  mutate(Proprortion = round((Count / total) *100, 2)) %>%  
+  select(-total, Response = DEM16) %>% 
+  arrange(desc(Count))
+
+education_count_df %>% 
+  knitr::kable()
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+ggplot(education_count_df, aes(x = factor(Response, levels = Response), y = Count)) +
+  geom_bar(stat="identity") +
+  theme_apa() +
+  labs(x="Education Level", y="Count") +
+  scale_x_discrete(labels = wrap_format(10))
+```
+
+```{r}
+sessionInfo()
 ```
