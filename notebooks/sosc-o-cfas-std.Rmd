@@ -52,7 +52,7 @@ socs_o_wide <- socs %>%
 socs_o <- polychoric(socs_o_wide)
 ```
 
-```{r, fig.width=16/2, fig.height=9/2}
+```{r fig.asp = 0.8, fig.width = 7}
 format_correlation(socs_o$rho, "SOCS-O Polychoric")
 ```
 
@@ -177,7 +177,7 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 socs_o_four_fit <- fit_measure
 ```
 
-## SOCS-O Second Order Model
+## SOCS-O Second Order Model (Equal Loadings)
 
 ```{r}
 model_name <- "Second Order (Equal Loadings)"
@@ -230,14 +230,14 @@ format_huxtable(socs_o_comparision)
 ## Omega
 
 ```{r}
-model_name <- "Bifactor"
+model_name <- "Second Order (Equal Loadings)"
 model_string <- '
 recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
 universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
 feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
 tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
 alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
-compassion =~ SOCS_O_1 + SOCS_O_2 + SOCS_O_3 + SOCS_O_4 + SOCS_O_5 + SOCS_O_6 + SOCS_O_7 + SOCS_O_8 + SOCS_O_9 + SOCS_O_10 + SOCS_O_11 + SOCS_O_12 + SOCS_O_13 + SOCS_O_14 + SOCS_O_15 + SOCS_O_16 + SOCS_O_17 + SOCS_O_18 + SOCS_O_19 + SOCS_O_20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
 '
 ```
 
@@ -246,11 +246,7 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-omegaFromSem(cfa_fit)
-```
-
-```{r}
-alpha(df)
+get_omegas(cfa_fit)
 ```
 
 ```{r}

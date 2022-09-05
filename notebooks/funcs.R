@@ -11,6 +11,7 @@ library(psych)
 library(jtools)
 library(viridis)
 library(semTools)
+library(knitr)
 
 
 
@@ -19,6 +20,7 @@ get_omegas <- function(cfa_fit) {
     compRelSEM(cfa_fit, return.total = TRUE),
     compRelSEM(cfa_fit, return.total = TRUE, tau.eq = TRUE)
   ) %>% 
+    mutate_all(~round(., 3)) %>% 
     mutate(measurement = c("Omega", "Alpha"), .before=everything())
 }
 

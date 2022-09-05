@@ -32,7 +32,7 @@ pbis_wide <- pbis %>%
 pbis <- polychoric(pbis_wide)
 ```
 
-```{r, fig.width=16/2, fig.height=9/2}
+```{r fig.asp = 0.8, fig.width = 7}
 format_correlation(pbis$rho, "PBIS Polychoric")
 ```
 
@@ -60,6 +60,19 @@ cfa_fit <- cfa(
     estimator="ML",
     std.lv=TRUE
   )
+```
+
+```{r}
+bind_rows(
+    compRelSEM(cfa_fit, return.total = TRUE),
+    compRelSEM(cfa_fit, return.total = TRUE, tau.eq = TRUE)
+) %>% 
+  
+    mutate(measurement = c("Omega", "Alpha"), .before=everything())
+```
+
+```{r}
+get_omegas(cfa_fit)
 ```
 
 ```{r}
