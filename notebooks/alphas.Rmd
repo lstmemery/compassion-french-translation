@@ -17,8 +17,30 @@ library(feather)
 source("funcs.R")
 ```
 
+## SOCS-S
+
 ```{r}
-df <- remove_nas(read_feather("../results/tidy_ceas_from.feather"))
+df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
+  filter(str_starts(item, "SOCS_S")) %>% 
+  remove_nas() %>% 
+  mutate(response = as.double(response))
+
+df
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
+
+## SOCS-O
+
+```{r}
+df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
+  filter(str_starts(item, "SOCS_O")) %>% 
+  remove_nas() %>% 
+  mutate(response = as.double(response))
+
+df
 ```
 
 ```{r fig.asp = 0.8, fig.width = 7}
@@ -26,6 +48,14 @@ plot_response_distribution(df)
 ```
 
 ## CEAS-FROM
+
+```{r}
+df <- remove_nas(read_feather("../results/tidy_ceas_from.feather"))
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+plot_response_distribution(df)
+```
 
 ```{r}
 get_alpha(df)

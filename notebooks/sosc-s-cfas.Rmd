@@ -147,6 +147,10 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+get_omegas(cfa_fit)
+```
+
+```{r}
 fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
 format_huxtable(fit_measure)
 ```

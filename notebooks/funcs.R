@@ -10,8 +10,17 @@ library(effectsize)
 library(psych)
 library(jtools)
 library(viridis)
+library(semTools)
 
 
+
+get_omegas <- function(cfa_fit) {
+  bind_rows(
+    compRelSEM(cfa_fit, return.total = TRUE),
+    compRelSEM(cfa_fit, return.total = TRUE, tau.eq = TRUE)
+  ) %>% 
+    mutate(measurement = c("Omega", "Alpha"), .before=everything())
+}
 
 remove_nas <- function(df) {
   no_nas <- df %>% 
