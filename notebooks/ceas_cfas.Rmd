@@ -37,10 +37,6 @@ ceas_sc_wide
 
 ```{r}
 ceas_sc_cor <- round(cor(ceas_sc_wide %>% select(-ResponseId), method="spearman"), 2)
-ceas_sc_cor
-```
-
-```{r}
 kable(ceas_sc_cor)
 ```
 
@@ -49,54 +45,176 @@ eigen(ceas_sc_cor)$values
 ```
 
 ```{r}
-ceas_sc_one_model <- "CEAS_SC =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8 + CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5"
-ceas_sc_one_fit <- lav_fit_measures(ceas_sc_one_model, ceas_sc_wide, "One Factor", "CEAS-SC")
-ceas_sc_one_fit
+scale_name <- "CEAS-SC"
+df <- ceas_sc_wide
+```
+
+## One Factor
+
+```{r}
+model_name <- "One Factor"
+model_string <- "CEAS_SC =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8 + CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5"
 ```
 
 ```{r}
-ceas_sc_two_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_sc_one_fit <- fit_measure
+```
+
+### CEAS-SC Two Factor
+
+```{r}
+model_name <- "Two Factor"
+model_string <- "
 CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
 "
-
-ceas_sc_two_fit <- lav_fit_measures(ceas_sc_two_model, ceas_sc_wide, "Two Factor", "CEAS-SC")
-ceas_sc_two_fit
 ```
 
 ```{r}
-ceas_sc_level_one_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_sc_two_fit <- fit_measure
+```
+
+### CEAS-SC Level One Model
+
+```{r}
+model_name <- "Level One"
+model_string <- "
 CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
 CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
 "
-
-ceas_sc_level_one_fit <- lav_fit_measures(ceas_sc_level_one_model, ceas_sc_wide, "Second Order", "CEAS-SC")
-ceas_sc_level_one_fit
 ```
 
 ```{r}
-ceas_sc_three_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_sc_level_one_fit <- fit_measure
+```
+
+### Three factor
+
+```{r}
+model_name <- "Three Factor"
+model_string <- "
 CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
 CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
 "
-
-ceas_sc_three_fit <- lav_fit_measures(ceas_sc_three_model, ceas_sc_wide, "Three Factor", "CEAS-SC")
-ceas_sc_three_fit
 ```
 
 ```{r}
-ceas_sc_level_two_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_sc_three_fit <- fit_measure
+```
+
+### Level Two Model (Equal Loadings)
+
+```{r}
+model_name <- "Third Order (Equal Loadings)"
+model_string <- "
 CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
 CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
 CEAS_SC_Engagement =~ 1*CEAS_SC_Engagement_1 + 1*CEAS_SC_Engagement_2
 CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
 CEAS_SC =~ 1*CEAS_SC_Engagement + 1*CEAS_SC_Action
 "
+```
 
-ceas_sc_level_two_fit <- lav_fit_measures(ceas_sc_level_two_model, ceas_sc_wide, "Third Order (Equal Loadings)", "CEAS-SC")
-ceas_sc_level_two_fit
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_sc_level_two_fit <- fit_measure
+```
+
+### Omega
+
+```{r}
+model_string <- "
+CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
+CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Engagement =~ CEAS_SC_Engagement_1 + CEAS_SC_Engagement_2
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+"
+```
+
+```{r}
+get_omegas(fit_cfa(model_string, df))
 ```
 
 ### CEAS-FROM
@@ -121,32 +239,101 @@ eigen(ceas_from_cor)$values
 ```
 
 ```{r}
-ceas_from_one_model <- "CEAS_FROM =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8 + CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
-"
+scale_name <- "CEAS-FROM"
+df <- ceas_from_wide
+```
 
-ceas_from_one_fit <- lav_fit_measures(ceas_from_one_model, ceas_from_wide, "One Factor", "CEAS-FROM")
-ceas_from_one_fit
+### One Factor
+
+```{r}
+model_name <- "One Factor"
+model_string <- "CEAS_FROM =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8 + CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
+"
 ```
 
 ```{r}
-ceas_from_two_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_from_one_fit <- fit_measure
+```
+
+### Two Factor
+
+```{r}
+model_name <- "Two Factor"
+model_string <- "
 CEAS_FROM_Engagement =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8
 CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
 "
-
-ceas_from_two_fit <- lav_fit_measures(ceas_from_two_model, ceas_from_wide, "Two Factor", "CEAS-FROM")
-ceas_from_two_fit
 ```
 
 ```{r}
-ceas_from_level_one_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_from_two_fit <- fit_measure
+```
+
+### Second Order
+
+```{r}
+model_name <- "Second Order"
+model_string <- "
 CEAS_FROM_Engagement =~ CEAS_FROM1_1 + CEAS_FROM1_2 + CEAS_FROM1_4 + CEAS_FROM1_5 + CEAS_FROM1_6 + CEAS_FROM1_8
 CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
 CEAS_FROM =~ CEAS_FROM_Engagement + CEAS_FROM_Action
 "
+```
 
-ceas_from_level_one_fit <- lav_fit_measures(ceas_from_level_one_model, ceas_from_wide, "Second Order", "CEAS-FROM")
-ceas_from_level_one_fit
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_from_level_one_fit <- fit_measure
+```
+
+```{r}
+get_omegas(cfa_fit)
 ```
 
 ### CEAS-TO
@@ -171,32 +358,115 @@ eigen(ceas_to_cor)$values
 ```
 
 ```{r}
-ceas_to_one_model <- "CEAS_TO =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8 + CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
-"
+df <- ceas_to_wide
+scale_name <- "CEAS-TO"
+```
 
-ceas_to_one_fit <- lav_fit_measures(ceas_to_one_model, ceas_to_wide, "One Factor", "CEAS-TO")
-ceas_to_one_fit
+### One Factor
+
+```{r}
+model_name <- "One Factor"
+model_string <- "CEAS_TO =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8 + CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+"
 ```
 
 ```{r}
-ceas_to_two_factor_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_to_one_fit <- fit_measure
+```
+
+### Two Factor
+
+```{r}
+model_name <- "Two Factor"
+model_string <- "
 CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
 CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
 "
-
-ceas_to_two_fit <- lav_fit_measures(ceas_to_two_factor_model, ceas_to_wide, "Two Factor", "CEAS-TO")
-ceas_to_two_fit
 ```
 
 ```{r}
-ceas_to_level_one_model <- "
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_to_two_fit <- fit_measure
+```
+
+### Second Order (Equal Loadings)
+
+```{r}
+model_name <- "Second Order (Equal Loadings)"
+model_string <- "
 CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
 CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
 CEAS_TO =~ 1*CEAS_TO_Engagement + 1*CEAS_TO_Action
 "
+```
 
-ceas_to_level_one_fit <- lav_fit_measures(ceas_to_level_one_model, ceas_to_wide, "Second Order (Equal Loadings)", "CEAS-TO")
-ceas_to_level_one_fit
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ceas_to_level_one_fit <- fit_measure
+```
+
+### Omega
+
+```{r}
+model_string <- "
+CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
+CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+CEAS_TO =~ CEAS_TO_Engagement + CEAS_TO_Action
+"
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+get_omegas(cfa_fit)
 ```
 
 ```{r}
