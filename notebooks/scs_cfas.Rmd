@@ -1,0 +1,317 @@
+---
+title: "SCS CFAs"
+output: html_document
+date: "2022-09-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(effectsize)
+source("funcs.R")
+```
+
+```{r}
+scs <- read_feather("../results/tidy_scs.feather") %>% 
+  mutate(response = if_else(scale_valence == "Negative", 6 - response, response))
+```
+
+```{r}
+scs_wide <- scs %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  select(-ResponseId)
+```
+
+```{r, correlation}
+scs_corr <- polychoric(scs_wide)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+format_correlation(scs_corr$rho, "SCS Polychoric")
+```
+
+```{r}
+eigen(scs_corr$rho)$values
+```
+
+```{r}
+scale_name <- "SCS"
+df <- scs_wide
+```
+
+## One-factor model
+
+```{r}
+model_name <- "One Factor"
+model_string <- "SCS =~ SCS_1 + SCS_2 + SCS_3 + SCS_4 + SCS_5 + SCS_6 + SCS_7 + SCS_8 + SCS_9 + SCS_10 + SCS_11 + SCS_12 + SCS_13 + SCS_14 + SCS_15 + SCS_16 + SCS_17 + SCS_18 + SCS_19 + SCS_20 + SCS_21 + SCS_22 + SCS_23 + SCS_24 + SCS_25 + SCS_26"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_one_fit <- fit_measure
+```
+
+## Two Factor
+
+```{r}
+model_name <- "Two Factor"
+model_string <- "
+Negative =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21 + SCS_2 + SCS_6 + SCS_20 + SCS_24 + SCS_4 + SCS_13 + SCS_18 + SCS_25
+Positive =~ SCS_3 + SCS_7 + SCS_10 + SCS_15 + SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26 + SCS_9 + SCS_14 + SCS_17 + SCS_22
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_two_fit <- fit_measure
+```
+
+## Six Factor
+
+```{r}
+model_name <- "Six Factor"
+model_string <- "
+Self_Judgement =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21
+Overidentification =~ SCS_2 + SCS_6 + SCS_20 + SCS_24
+Common_Humanity =~ SCS_3 + SCS_7 + SCS_10 + SCS_15
+Isolation =~ SCS_4 + SCS_13 + SCS_18 + SCS_25
+Self_Kindness =~ SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26
+Mindfulness =~ SCS_9 + SCS_14 + SCS_17 + SCS_22
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_six_fit <- fit_measure
+```
+
+## Bifactor Model
+
+```{r}
+model_name <- "Bifactor"
+model_string <- "
+Self_Judgement =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21
+Overidentification =~ SCS_2 + SCS_6 + SCS_20 + SCS_24
+Common_Humanity =~ SCS_3 + SCS_7 + SCS_10 + SCS_15
+Isolation =~ SCS_4 + SCS_13 + SCS_18 + SCS_25
+Self_Kindness =~ SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26
+Mindfulness =~ SCS_9 + SCS_14 + SCS_17 + SCS_22
+SCS =~ SCS_1 + SCS_2 + SCS_3 + SCS_4 + SCS_5 + SCS_6 + SCS_7 + SCS_8 + SCS_9 + SCS_10 + SCS_11 + SCS_12 + SCS_13 + SCS_14 + SCS_15 + SCS_16 + SCS_17 + SCS_18 + SCS_19 + SCS_20 + SCS_21 + SCS_22 + SCS_23 + SCS_24 + SCS_25 + SCS_26
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_bifactor_fit <- fit_measure
+```
+
+## Hierarchical
+
+```{r}
+model_name <- "Hierarchical"
+model_string <- "
+Self_Judgement =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21
+Overidentification =~ SCS_2 + SCS_6 + SCS_20 + SCS_24
+Common_Humanity =~ SCS_3 + SCS_7 + SCS_10 + SCS_15
+Isolation =~ SCS_4 + SCS_13 + SCS_18 + SCS_25
+Self_Kindness =~ SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26
+Mindfulness =~ SCS_9 + SCS_14 + SCS_17 + SCS_22
+SCS =~ Self_Judgement + Overidentification + Common_Humanity + Isolation + Self_Kindness + Mindfulness
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_hierarchical_fit <- fit_measure
+```
+
+```{r}
+get_omegas(cfa_fit)
+```
+
+### Two Bifactor
+
+```{r}
+model_name <- "Two Bifactor"
+model_string <- "
+Self_Judgement =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21
+Overidentification =~ SCS_2 + SCS_6 + SCS_20 + SCS_24
+Common_Humanity =~ SCS_3 + SCS_7 + SCS_10 + SCS_15
+Isolation =~ SCS_4 + SCS_13 + SCS_18 + SCS_25
+Self_Kindness =~ SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26
+Mindfulness =~ SCS_9 + SCS_14 + SCS_17 + SCS_22
+Negative =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21 + SCS_2 + SCS_6 + SCS_20 + SCS_24 + SCS_4 + SCS_13 + SCS_18 + SCS_25
+Positive =~ SCS_3 + SCS_7 + SCS_10 + SCS_15 + SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26 + SCS_9 + SCS_14 + SCS_17 + SCS_22
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+scs_two_bifactor_fit <- fit_measure
+```
+
+```{r}
+sessionInfo()
+```

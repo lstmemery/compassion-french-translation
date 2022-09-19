@@ -33,7 +33,7 @@ dass_corr <- polychoric(dass_wide)
 ```
 
 ```{r fig.asp = 0.8, fig.width = 7}
-format_correlation(dass_corr$rho, "DASS_21 Polychoric")
+format_correlation(dass_corr$rho, "DASS-21 Polychoric")
 ```
 
 ```{r}
@@ -132,7 +132,7 @@ model_string <- "
 somatization =~ DASS_21_1 + DASS_21_6 + DASS_21_8 + DASS_21_11 + DASS_21_12 + DASS_21_14 + DASS_21_18
 anxiety =~ DASS_21_2 + DASS_21_4 + DASS_21_7 + DASS_21_9 + DASS_21_15 + DASS_21_19 + DASS_21_20
 depression =~ DASS_21_3 + DASS_21_5 + DASS_21_10 + DASS_21_13 + DASS_21_16 + DASS_21_17 + DASS_21_21
-dass =~ somatization + anxiety + depression
+dass =~ DASS_21_1 + DASS_21_2 + DASS_21_3 + DASS_21_4 + DASS_21_5 + DASS_21_6 + DASS_21_7 + DASS_21_8 + DASS_21_9 + DASS_21_10 + DASS_21_11 + DASS_21_12 + DASS_21_13 + DASS_21_14 + DASS_21_15 + DASS_21_16 + DASS_21_17 + DASS_21_18 + DASS_21_19 + DASS_21_20 + DASS_21_21
 "
 model_string
 ```
@@ -165,6 +165,33 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 dass_three_fit <- fit_measure
+```
+
+```{r}
+get_omegas(cfa_fit)
+```
+
+### Hierarchical Model
+
+```{r}
+model_name <- "Hierarchical"
+model_string <- "
+somatization =~ DASS_21_1 + DASS_21_6 + DASS_21_8 + DASS_21_11 + DASS_21_12 + DASS_21_14 + DASS_21_18
+anxiety =~ DASS_21_2 + DASS_21_4 + DASS_21_7 + DASS_21_9 + DASS_21_15 + DASS_21_19 + DASS_21_20
+depression =~ DASS_21_3 + DASS_21_5 + DASS_21_10 + DASS_21_13 + DASS_21_16 + DASS_21_17 + DASS_21_21
+dass =~ somatization + anxiety + depression
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE,
+    bounds=TRUE
+  )
 ```
 
 ```{r}

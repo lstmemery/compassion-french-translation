@@ -18,38 +18,38 @@ source("funcs.R")
 ```
 
 ```{r}
-pbis <- read_feather("../results/tidy_pbis.feather")
+wemwbs <- read_feather("../results/tidy_wemwbs.feather")
 ```
 
 ```{r}
-pbis_wide <- pbis %>% 
+wemwbs_wide <- wemwbs %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
   filter_all(all_vars(!is.na(.))) %>% 
   select(-ResponseId)
 ```
 
 ```{r, correlation}
-pbis <- polychoric(pbis_wide)
+wemwbs <- polychoric(wemwbs_wide)
 ```
 
 ```{r fig.asp = 0.8, fig.width = 7}
-format_correlation(pbis$rho, "PBIS Polychoric")
+format_correlation(wemwbs$rho, "WEMWBS Polychoric")
 ```
 
 ```{r}
-eigen(pbis$rho)$values
+eigen(wemwbs$rho)$values
 ```
 
 ```{r}
-scale_name <- "PBIS"
-df <- pbis_wide
+scale_name <- "WEMWBS"
+df <- wemwbs_wide
 ```
 
 ## One-factor model
 
 ```{r}
 model_name <- "One Factor"
-model_string <- "compassion =~ PBIS_1 + PBIS_2 + PBIS_3 + PBIS_4"
+model_string <- "WEMWBS =~ WEMWBS_1 + WEMWBS_2 + WEMWBS_3 + WEMWBS_4 + WEMWBS_5 + WEMWBS_6 + WEMWBS_7 + WEMWBS_8 + WEMWBS_9 + WEMWBS_10 + WEMWBS_11 + WEMWBS_12 + WEMWBS_13 + WEMWBS_14"
 model_string
 ```
 
@@ -57,7 +57,7 @@ model_string
 cfa_fit <- cfa(
     model_string, 
     data=df,
-    estimator="ML",
+    estimator="MLR",
     std.lv=TRUE
   )
 ```
@@ -84,7 +84,7 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
 ```{r}
-pbis_one_fit <- fit_measure
+wemwbs_one_fit <- fit_measure
 ```
 
 ```{r}

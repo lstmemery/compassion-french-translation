@@ -1,0 +1,229 @@
+---
+title: "FFMQ CFAs"
+output: html_document
+date: "2022-09-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(feather)
+library(psych)
+library(effectsize)
+source("funcs.R")
+```
+
+```{r}
+ffmq <- read_feather("../results/tidy_ffmq.feather") 
+```
+
+```{r}
+ffmq_wide <- ffmq %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  select(-ResponseId)
+```
+
+```{r, correlation}
+ffmq_corr <- polychoric(ffmq_wide)
+```
+
+```{r fig.asp = 0.8, fig.width = 7}
+format_correlation(ffmq_corr$rho, "FFMQ Polychoric")
+```
+
+```{r}
+eigen(ffmq_corr$rho)$values
+```
+
+```{r}
+scale_name <- "FFMQ"
+df <- ffmq_wide
+```
+
+## One-factor model
+
+```{r}
+model_name <- "One Factor"
+model_string <- "FFMQ =~ FFMQ_1 + FFMQ_2 + FFMQ_3 + FFMQ_4 + FFMQ_5 + FFMQ_6 + FFMQ_7 + FFMQ_8 + FFMQ_9 + FFMQ_10 + FFMQ_11 + FFMQ_12 + FFMQ_13 + FFMQ_14 + FFMQ_15 + FFMQ_16 + FFMQ_17 + FFMQ_18 + FFMQ_19 + FFMQ_20 + FFMQ_21 + FFMQ_22 + FFMQ_23 + FFMQ_24"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ffmq_one_fit <- fit_measure
+```
+
+## Five Factor
+
+```{r}
+ffmq %>% head(24)
+```
+
+```{r}
+model_name <- "Five Factor"
+model_string <- "
+Describe =~ FFMQ_1 + FFMQ_2 + FFMQ_5 + FFMQ_11 + FFMQ_16
+Nonreactivity =~ FFMQ_3 + FFMQ_9 + FFMQ_13 + FFMQ_18 + FFMQ_21
+Nonjudgement =~ FFMQ_4 + FFMQ_7 + FFMQ_14 + FFMQ_19 + FFMQ_24
+Observe =~ FFMQ_6 + FFMQ_10 + FFMQ_15 + FFMQ_20
+Awareness =~ FFMQ_8 + FFMQ_12 + FFMQ_17 + FFMQ_22 + FFMQ_23
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ffmq_bifactor_fit <- fit_measure
+```
+
+## Bifactor Model
+
+```{r}
+model_name <- "Bifactor"
+model_string <- "
+Describe =~ FFMQ_1 + FFMQ_2 + FFMQ_5 + FFMQ_11 + FFMQ_16
+Nonreactivity =~ FFMQ_3 + FFMQ_9 + FFMQ_13 + FFMQ_18 + FFMQ_21
+Nonjudgement =~ FFMQ_4 + FFMQ_7 + FFMQ_14 + FFMQ_19 + FFMQ_24
+Observe =~ FFMQ_6 + FFMQ_10 + FFMQ_15 + FFMQ_20
+Awareness =~ FFMQ_8 + FFMQ_12 + FFMQ_17 + FFMQ_22 + FFMQ_23
+FFMQ =~ FFMQ_1 + FFMQ_2 + FFMQ_3 + FFMQ_4 + FFMQ_5 + FFMQ_6 + FFMQ_7 + FFMQ_8 + FFMQ_9 + FFMQ_10 + FFMQ_11 + FFMQ_12 + FFMQ_13 + FFMQ_14 + FFMQ_15 + FFMQ_16 + FFMQ_17 + FFMQ_18 + FFMQ_19 + FFMQ_20 + FFMQ_21 + FFMQ_22 + FFMQ_23 + FFMQ_24 
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ffmq_bifactor_fit <- fit_measure
+```
+
+## Hierarchical
+
+```{r}
+model_name <- "Hierarchical"
+model_string <- "
+Describe =~ FFMQ_1 + FFMQ_2 + FFMQ_5 + FFMQ_11 + FFMQ_16
+Nonreactivity =~ FFMQ_3 + FFMQ_9 + FFMQ_13 + FFMQ_18 + FFMQ_21
+Nonjudgement =~ FFMQ_4 + FFMQ_7 + FFMQ_14 + FFMQ_19 + FFMQ_24
+Observe =~ FFMQ_6 + FFMQ_10 + FFMQ_15 + FFMQ_20
+Awareness =~ FFMQ_8 + FFMQ_12 + FFMQ_17 + FFMQ_22 + FFMQ_23
+FFMQ =~ Describe + Nonreactivity + Nonjudgement + Observe + Awareness
+"
+model_string
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+ffmq_hierarchical_fit <- fit_measure
+```
+
+```{r}
+get_omegas(cfa_fit)
+```
+
+```{r}
+sessionInfo()
+```
