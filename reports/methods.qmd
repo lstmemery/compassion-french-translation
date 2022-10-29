@@ -1,0 +1,17 @@
+---
+title: "methods"
+format: docx
+editor: visual
+bibliography: ../references.bib
+link-citations: true
+---
+
+## Analyses
+
+All statistical analyses were performed on R 4.2.1. Code can be found
+here: https://github.com/lstmemery/compassion-french-translation
+
+## Confirmatory Factor Analyses
+
+All CFAs were fit with lavaan version 0.6-12[@lavaan]. semTools
+0.5-6[@semTools] was used to visualize path diagrams.

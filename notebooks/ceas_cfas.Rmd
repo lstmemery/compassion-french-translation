@@ -1,6 +1,6 @@
 ---
 title: "CEAS CFAs"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -72,10 +72,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
-```{r}
-ceas_sc_one_fit <- fit_measure
-```
-
 ### CEAS-SC Two Factor
 
 ```{r}
@@ -100,10 +96,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_sc_two_fit <- fit_measure
 ```
 
 ### CEAS-SC Level One Model
@@ -133,10 +125,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
-```{r}
-ceas_sc_level_one_fit <- fit_measure
-```
-
 ### Three factor
 
 ```{r}
@@ -162,10 +150,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_sc_three_fit <- fit_measure
 ```
 
 ### Level Two Model (Equal Loadings)
@@ -195,10 +179,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_sc_level_two_fit <- fit_measure
 ```
 
 ### Omega
@@ -267,10 +247,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
-```{r}
-ceas_from_one_fit <- fit_measure
-```
-
 ### Two Factor
 
 ```{r}
@@ -295,10 +271,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_from_two_fit <- fit_measure
 ```
 
 ### Second Order
@@ -326,10 +298,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_from_level_one_fit <- fit_measure
 ```
 
 ```{r}
@@ -386,10 +354,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
-```{r}
-ceas_to_one_fit <- fit_measure
-```
-
 ### Two Factor
 
 ```{r}
@@ -414,10 +378,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-ceas_to_two_fit <- fit_measure
 ```
 
 ### Second Order (Equal Loadings)
@@ -447,10 +407,6 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
-```{r}
-ceas_to_level_one_fit <- fit_measure
-```
-
 ### Omega
 
 ```{r}
@@ -467,25 +423,6 @@ cfa_fit <- fit_cfa(model_string, df)
 
 ```{r}
 get_omegas(cfa_fit)
-```
-
-```{r}
-bind_rows(
-  ceas_sc_one_fit,
-  ceas_sc_two_fit,
-  ceas_sc_level_one_fit,
-  ceas_sc_three_fit,
-  ceas_sc_level_two_fit,
-  ceas_from_one_fit,
-  ceas_from_two_fit,
-  ceas_from_level_one_fit,
-  ceas_to_one_fit,
-  ceas_to_two_fit,
-  ceas_to_level_one_fit
-) %>% 
-  as_huxtable(autoformat=FALSE) %>% 
-    theme_article() %>% 
-    set_number_format(value=fmt_pretty(big.mark = ""))
 ```
 
 ```{r}
