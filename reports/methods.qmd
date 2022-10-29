@@ -14,4 +14,25 @@ here: https://github.com/lstmemery/compassion-french-translation
 ## Confirmatory Factor Analyses
 
 All CFAs were fit with lavaan version 0.6-12[@lavaan]. semTools
-0.5-6[@semTools] was used to visualize path diagrams.
+0.5-6[@semTools] was used to visualize path diagrams. Before fitting any
+model, each scale's polychoric correlation matrix was examined using
+[@psychci]. Unless otherwise noted, all models were fit with the robust
+maximum likelihood estimator. All models also had standardized latent
+variables. Responses that were complete for a scale were included. The
+models reflect the structures of the scales where they were first
+published. In addition, if a model failed to converge or had poor
+goodness of fit, alternative models were fit.
+
+**SOCS-S:**
+
+## Internal Consistency
+
+Internal consistency of total scale and sub-scale items was assessed
+using both Cronbach's alpha and omega coefficients. Omega and alpha
+coefficients were computed using the compRelSEM function in semTools on
+the model that reflects the model with the most parameters in the
+previously published paper.
+
+# Results
+
+All scales examined had positive semi-definite polychoric matrices.
