@@ -1,23 +1,6 @@
 ---
 title: "SOCS-S Initial CFA"
-output: 
-  pdf_document:
-    latex_engine: xelatex
-header-includes:
-   - \usepackage{array}
-   - \usepackage{caption}
-   - \usepackage{graphicx}
-   - \usepackage{siunitx}
-   - \usepackage[normalem]{ulem}
-   - \usepackage{colortbl}
-   - \usepackage{multirow}
-   - \usepackage{hhline}
-   - \usepackage{calc}
-   - \usepackage{tabularx}
-   - \usepackage{threeparttable}
-   - \usepackage{wrapfig}
-   - \usepackage{adjustbox}
-   - \usepackage{hyperref}
+output: word_document
 ---
 
 ```{r setup, include=FALSE}

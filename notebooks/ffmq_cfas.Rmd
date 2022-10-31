@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(feather)
 library(psych)
+library(lavaan)
 library(effectsize)
 source("funcs.R")
 ```
