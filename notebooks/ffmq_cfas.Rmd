@@ -1,6 +1,8 @@
 ---
 title: "FFMQ CFAs"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 date: "2022-09-19"
 ---
 
