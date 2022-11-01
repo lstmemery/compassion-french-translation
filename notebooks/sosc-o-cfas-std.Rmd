@@ -2,23 +2,6 @@
 title: "SOCS-O Initial CFA"
 output:
   word_document: default
-  pdf_document:
-    latex_engine: xelatex
-header-includes:
-- \usepackage{array}
-- \usepackage{caption}
-- \usepackage{graphicx}
-- \usepackage{siunitx}
-- \usepackage[normalem]{ulem}
-- \usepackage{colortbl}
-- \usepackage{multirow}
-- \usepackage{hhline}
-- \usepackage{calc}
-- \usepackage{tabularx}
-- \usepackage{threeparttable}
-- \usepackage{wrapfig}
-- \usepackage{adjustbox}
-- \usepackage{hyperref}
 ---
 
 ```{r setup, include=FALSE}
@@ -30,6 +13,7 @@ library(tidyverse)
 library(feather)
 library(psych)
 library(effectsize)
+library(report)
 source("funcs.R")
 ```
 
@@ -75,6 +59,14 @@ model_string
 
 ```{r}
 cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
 ```
 
 ```{r}
@@ -157,6 +149,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -196,6 +196,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -225,6 +233,53 @@ socs_o_comparision <- bind_rows(
 )
 
 format_huxtable(socs_o_comparision)
+```
+
+## Hierarhical
+
+```{r}
+model_name <- "Hierarchical"
+model_string <- '
+recognizing_suffering =~ SOCS_O_1 + SOCS_O_6 + SOCS_O_11 + SOCS_O_16
+universality_of_suffering =~ SOCS_O_2 + SOCS_O_7 + SOCS_O_12 + SOCS_O_17
+feeling_of_suffering =~ SOCS_O_3 + SOCS_O_8 + SOCS_O_13 + SOCS_O_18
+tolerating_discomfort =~ SOCS_O_4 + SOCS_O_9 + SOCS_O_14 + SOCS_O_19
+alleviate_suffering =~ SOCS_O_5 + SOCS_O_10 + SOCS_O_15 + SOCS_O_20
+compassion =~ recognizing_suffering + universality_of_suffering + feeling_of_suffering + tolerating_discomfort + alleviate_suffering
+'
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
+format_huxtable(fit_measure)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+socs_o_second_order_fit <- fit_measure
 ```
 
 ## Omega

@@ -37,6 +37,10 @@ demo_count_table <- df %>%
     )
 ```
 
+```{r}
+demo_count_table
+```
+
 ## Age
 
 ```{r}

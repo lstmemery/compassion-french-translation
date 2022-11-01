@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(feather)
 library(psych)
+library(report)
 source("funcs.R")
 ```
 
@@ -60,8 +61,17 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+report_performance(cfa_fit)
+```
+
+```{r}
 fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
+fit_measure
+# format_huxtable(fit_measure)
 ```
 
 ```{r}
@@ -94,8 +104,16 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+report_performance(cfa_fit)
+```
+
+```{r}
 fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
+# format_huxtable(fit_measure)
 ```
 
 ```{r}
@@ -130,12 +148,20 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_performance(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
 get_omegas(cfa_fit)
 ```
 
 ```{r}
 fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
+# format_huxtable(fit_measure)
 ```
 
 ```{r}
@@ -157,7 +183,7 @@ socs_s_comparision <- bind_rows(
   socs_s_second_order_fit
 )
 
-format_huxtable(socs_s_comparision)
+socs_s_comparision
 ```
 
 ```{r}

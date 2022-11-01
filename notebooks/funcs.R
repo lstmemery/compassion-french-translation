@@ -12,7 +12,7 @@ library(jtools)
 library(viridis)
 library(semTools)
 library(knitr)
-
+library(report)
 
 
 get_omegas <- function(cfa_fit) {
@@ -165,4 +165,22 @@ interpret_fit <- function(cfa_fit) {
       Name == "RMSEA" & Value < 0.05 ~ "good",
       TRUE ~ as.character(Interpretation)
     ))
+}
+
+report_fit_less_chi <- function(cfa_fit) {
+  report_performance(
+    cfa_fit, 
+    metrics=c(
+      "NNFI", 
+      "CFI",
+      "RMSEA", 
+      "SRMR",
+      "AIC")
+    )
+}
+
+report_fit_chi <- function(cfa_fit) {
+  report_performance(
+    cfa_fit, 
+    metrics=c("Chi2", "Chi2_df", "p_Chi2", "NNFI", "CFI"))
 }

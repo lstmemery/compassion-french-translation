@@ -25,6 +25,100 @@ goodness of fit, alternative models were fit.
 
 **SOCS-S:**
 
+-   One factor
+
+-   Five factor
+
+-   Five factor hierarchical
+
+**SOCS-O:**
+
+-   One factor
+
+-   Five factor
+
+-   Four factor (feelings of suffering and tolerating discomfort merged)
+
+-   Five factor hierarchical model with equal loadings
+
+FFMQ
+
+-   One factor
+
+-   Five factor
+
+-   Bifactor
+
+-   Five factor hierarchical
+
+SCS
+
+-   One factor
+
+-   Two factor
+
+-   Six factor
+
+-   Bifactor (Six factor)
+
+CS
+
+-   One factor
+
+-   Four factor
+
+-   Four factor hierarchical
+
+CEAS-SC
+
+-   One factor
+
+-   Two factor
+
+-   Two factor hierarchical
+
+-   Three factor
+
+-   Three factor hierarchical
+
+CEAS-FROM
+
+-   One factor
+
+-   Two factor
+
+-   Two factor hierarchical
+
+CEAS-TO
+
+-   One factor
+
+-   Two factor
+
+-   Two factor hierarchical (Equal Loadings)
+
+ECR
+
+-   One factor
+
+-   Two factor
+
+-   Bifactor
+
+-   Two factor hierarchical
+
+DASS
+
+-   One factor
+
+-   Three factor
+
+-   Bifactor
+
+-   Three factor hierarchical
+
+WEMWBS and PBIS are both unideminsional scales.
+
 ## Internal Consistency
 
 Internal consistency of total scale and sub-scale items was assessed
@@ -36,3 +130,89 @@ previously published paper.
 # Results
 
 All scales examined had positive semi-definite polychoric matrices.
+
+### SOCS-S
+
+One factor: The model is significantly different from a baseline model
+(Chi2(170) = 1597.07, p \< .001). The NNFI (.63 \< .90), CFI (.67 \<
+.90), RMSEA (.15 \> .05), SRMR (.12 \> .08) all suggest a poor fit.
+
+Five factor:
+
+The model is significantly different from a baseline model (Chi2(160) =
+547.57, p \< .001). The CFI (.91 \> .90) and SRMR (.07 \< .08) and RMSEA
+(.08 \> .08) suggest a satisfactory fit. The NNFI (.89 \< .90) suggest a
+poor fit.
+
+Five factor hierarchical:
+
+The model is significantly different from a baseline model (Chi2(165) =
+574.37, p \< .001). The CFI (.90 \> .90) and SRMR (.08 \< .08) suggest a
+satisfactory fit. The NNFI (.89 \< .90) and RMSEA (.08 \> .08) suggest a
+poor fit.
+
+AIC for the five factor model was was lowest.
+
+### SOCS-O
+
+One factor: The model is significantly different from a baseline model
+(Chi2(170) = 1611.98, p \< .001). The NNFI (.62 \< .90), CFI (.66 \<
+.90), RMSEA (.15 \> .05),(.11 \> .08) suggest a poor fit.
+
+Five factor: The model did not converge on a satisfactory solution. The
+covariance matrix of the latent variables was not positive definite.
+{Should I include the matrix as a table?} Further inspection of the
+standardized covariance matrix showed that the latent variables for
+tolerating discomfort and feeling of suffering for others were highly
+correlated (\>0.99) with one another. We fit a four factor model where
+these two subscales were merged.
+
+Four factor: The model is significantly different from a baseline model
+(Chi2(164) = 424.86, p \<.001). The NNFI (.93 \> .90), RMSEA (.06 \<
+.08), CFI (.94 \> .90) and SRMR (.05 \< .08) all suggest a satisfactory
+fit.
+
+Hierarchical Five factor: The hierarchical five factor model was fit
+without issue. he model is significantly different from a baseline model
+(Chi2(165) = 429.82, p \< .001). The NNFI (.93 \> .90), RMSEA (.06 \<
+.08), CFI (.94 \> .90) and SRMR (.05 \< .08) suggest a satisfactory fit.
+
+## SCS
+
+Note: All negative scales were recoded as positive for the sake of these
+analyses.
+
+One factor: The model is significantly different from a baseline model
+(Chi2(299) = 1729.79, p \< .001). The NNFI (.72 \< .90), CFI (.74 \<
+.90), RMSEA (.12 \> .05) and SRMR (.084 \> .080) suggest a poor fit.
+
+Two factor: The model is significantly different from a baseline model
+(Chi2(298) = 1194.05, p \< .001). The SRMR (.06 \< .08) suggests a
+satisfactory fit. The NNFI (.82 \< .90), CFI (.84 \< .90), RMSEA (.09 \>
+.08) suggest a poor fit.
+
+Six Factor: The model is significantly different from a baseline model
+(Chi2(284) = 779.51, p \< .001). The CFI (.91 \> .90), SRMR (.06 \<
+.08), RMSEA (.07 \< .08) suggest a satisfactory fit. The NNFI (.896 \<
+.900) suggest a poor fit.
+
+Six Factor Bifactor: This model could not be fit because
+variance-covariance matrix of the estimated parameters was not positive
+definite. This suggests the model is not identified. As an alternative,
+a hierarchical model was fit.
+
+Six Factor Hierarchical: The model is significantly different from a
+baseline model (Chi2(293) = 960.49, p \< .001). The SRMR (.077 \< .080)
+suggests a satisfactory fit. The RMSEA (.0807 \> .0800), NNFI (.86 \<
+.90) and CFI (.88 \<.90) suggest a poor fit.
+
+Two Bifactor: This model could also not be fit because
+variance-covariance matrix of the estimated parameters was not positive
+definite.
+
+Six Factor-Two Hierarchical Factors: The model is significantly
+different from a baseline model (Chi2(292) = 853.05, p \< .001). The
+SRMR (.06 \< .08) and RMSEA (.07 \< .08) suggests a satisfactory fit.
+The NNFI (.89 \< .90) and CFI (.897 \< .900) suggest a poor fit.
+
+## Convergent and Discriminant Validity
