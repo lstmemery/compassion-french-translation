@@ -22,7 +22,8 @@ cs <- read_feather("../results/tidy_cs.feather")
 ```{r}
 cs_wide <- cs %>% 
   pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
-  filter_all(all_vars(!is.na(.))) 
+  filter_all(all_vars(!is.na(.))) %>% 
+  select(-ResponseId)
 
 cs_wide
 ```
@@ -45,128 +46,28 @@ scale_name <- "CS Kind"
 df <- cs_wide
 ```
 
-## One-factor model
-
-```{r}
-model_name <- "One Factor"
-model_string <- "CS_Kind =~ CS_2 + CS_6 + CS_10 + CS_14"
-model_string
-```
-
-```{r}
-cfa_fit <- fit_cfa(model_string, df)
-```
-
-```{r}
-fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
-```
-
-```{r}
-format_sem_paths(cfa_fit, scale_name, model_name)
-```
-
-```{r}
-format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-cs_kind_one_fit <- fit_measure
-```
-
-### CS Common Humanity
-
-```{r}
-scale_name <- "CS Common Humanity"
-model_string <- "CS_Common_Humanity =~ CS_4 + CS_8 + CS_12 + CS_16"
-```
-
-```{r}
-cfa_fit <- fit_cfa(model_string, df)
-```
-
-```{r}
-fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
-```
-
-```{r}
-format_sem_paths(cfa_fit, scale_name, model_name)
-```
-
-```{r}
-format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-cs_common_humanity_one_fit <- fit_measure
-```
-
-## CS Mindfulness
-
-```{r}
-scale_name <- "CS Mindfulness"
-model_string <- "CS_Mindfulness =~ CS_1 + CS_5 + CS_9 + CS_13"
-```
-
-```{r}
-cfa_fit <- fit_cfa(model_string, df)
-```
-
-```{r}
-fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
-```
-
-```{r}
-format_sem_paths(cfa_fit, scale_name, model_name)
-```
-
-```{r}
-format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-cs_mindfulness_one_fit <- fit_measure
-```
-
-## CS Indifference
-
-```{r}
-scale_name <- "CS Indifference"
-model_string <- "CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15"
-```
-
-```{r}
-cfa_fit <- fit_cfa(model_string, df)
-```
-
-```{r}
-fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-format_huxtable(fit_measure)
-```
-
-```{r}
-format_sem_paths(cfa_fit, scale_name, model_name)
-```
-
-```{r}
-format_huxtable(format_cfa_parameters(cfa_fit))
-```
-
-```{r}
-cs_indifference_one_fit <- fit_measure
-```
-
 ## CS One Factor
 
 ```{r}
 scale_name <- "CS"
-cs_one_model <- "CS =~ CS_1 + CS_2 + CS_3 + CS_4 + CS_5 + CS_6 + CS_7 + CS_8 + CS_9 + CS_10 + CS_11 + CS_12 + CS_13 + CS_14 + CS_15 + CS_16"
+model_name <- "One Factor"
+model_string <- "CS =~ CS_1 + CS_2 + CS_3 + CS_4 + CS_5 + CS_6 + CS_7 + CS_8 + CS_9 + CS_10 + CS_11 + CS_12 + CS_13 + CS_14 + CS_15 + CS_16"
 ```
 
 ```{r}
 cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
 ```
 
 ```{r}
@@ -183,7 +84,7 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
 ```{r}
-cs_indifference_one_fit <- fit_measure
+cs_one_fit <- fit_measure
 ```
 
 ## CS Four Factor
@@ -200,6 +101,18 @@ CS_Indifference =~ CS_3 + CS_7 + CS_11 + CS_15
 
 ```{r}
 cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
 ```
 
 ```{r}
@@ -237,7 +150,25 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-get_omegas(cfa_fit)
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ```{r}
@@ -258,16 +189,13 @@ cs_second_order_fit <- fit_measure
 ```
 
 ```{r}
-socs_o_comparision <- bind_rows(
-  cs_kind_one_fit,
-  cs_common_humanity_one_fit,
-  cs_mindfulness_one_fit,
-  cs_indifference_one_fit,
+cs_comparision <- bind_rows(
+  cs_one_fit,
   cs_four_factor_fit,
   cs_second_order_fit
 )
 
-format_huxtable(socs_o_comparision)
+format_huxtable(cs_comparision)
 ```
 
 ```{r}

@@ -307,7 +307,13 @@ scs_hierarchical_fit <- fit_measure
 ```
 
 ```{r}
-get_omegas(cfa_fit)
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ### Two Bifactor

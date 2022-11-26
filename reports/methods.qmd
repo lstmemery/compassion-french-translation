@@ -215,4 +215,106 @@ different from a baseline model (Chi2(292) = 853.05, p \< .001). The
 SRMR (.06 \< .08) and RMSEA (.07 \< .08) suggests a satisfactory fit.
 The NNFI (.89 \< .90) and CFI (.897 \< .900) suggest a poor fit.
 
-## Convergent and Discriminant Validity
+### CEAS-SC
+
+One Factor: The model is significantly different from a baseline model
+(Chi2(35) = 228.06, p \< .001). The SRMR (.075 \< .080) suggests a
+satisfactory fit. The NNFI (.86 \< .90), CFI (.89 \< .90), and RMSEA
+(.13 \> .05) suggest a poor fit.
+
+Two Factor: The model is significantly different from a baseline model
+(Chi2(34) =178.86,p \< .001). The CFI (.92 \> .90) and SRMR (.07 \< .08)
+suggest a satisfactory fit. The NNFI (.89 \< .90) and RMSEA (.11 \>.08)
+suggest a poor fit.
+
+Two Factor Hierarchical: The model is significantly different from a
+baseline model (Chi2(33) = 178.86, p \< .001). The CFI (.92 \> .90) and
+SRMR (.07 \< .08) suggest a satisfactory fit. The NNFI (.88 \< .90) and
+RMSEA (.12 \> .08) suggest a poor fit.
+
+Three factor: The model is significantly different from a baseline model
+(Chi2(32) = 131.95, p \< .001). The NNFI (.92 \> .90), SRMR (.05 \<
+.08), and CFI (.94 \> .90) suggest a satisfactory fit. The RMSEA (.10 \>
+.08) suggests a poor fit.
+
+Three factor, three level hierarchical: The model did not converge on a
+solution. It's likely that the there were too few data points to fit the
+model.
+
+Three factors, three level hierarchical (equal loadings): This model
+assumes the two sub-scales of engagement are of equal weight. It also
+assumes that the engagement and action sub-scales are of equal weight.
+The model is significantly different from a baseline model (Chi2(35) =
+266.06, p \< .001). The NNFI (.83 \< .90), (.87 \< .90), RMSEA (.14 \>
+.05) and SRMR (.17 \> .08) suggest a poor fit.
+
+### CEAS-FROM
+
+One Factor: The model is significantly different from a baseline model
+(Chi2(35) = 187.96, p \< .001). The SRMR (.03 \< .05) suggests a good
+fit. The NNFI (.93 \> .90), CFI (.948 \> .900) and SRMR (.03 \< .08)
+suggest a satisfactory fit. The RMSEA (.12 \> .08) suggests a poor fit.
+
+Two Factor: The model is significantly different from a baseline model
+(Chi2(34) = 137.83, p \< .001). The NNFI (.953 \> .950) and CFI (.96 \>
+.95) suggest a good fit. The SRMR (.03 \< .08) suggest a satisfactory
+fit. The RMSEA (.10 \> .08) suggests a poor fit.
+
+Two Factor Hierarchical: he model is significantly different from a
+baseline model (Chi2(33) = 137.83, p \< .001). The NNFI (.951 \> .95)
+and CFI (.96 \> .95) suggest a good fit. SRMR (.03 \< .08) suggest a
+satisfactory fit. The RMSEA (.10 \> .08) suggests a poor fit.
+
+### CEAS-TO
+
+One Factor: The model is significantly different from a baseline model
+(Chi2(35) = 216.82, p \< .001). The SRMR (.06 \< .08) suggests a
+satisfactory fit. The NNFI (.86 \< .90), CFI (.89 \< .90) and RMSEA (.13
+\> .08) suggest a poor fit.
+
+Two Factor: The model is significantly different from a baseline model
+(Chi2(34) = 158.00, p \< .001). The NNFI (.903 \> .900), CFI (.93 \>
+.90), and SRMR (.05 \< .08) suggest a satisfactory fit. The RMSEA (.11
+\> .05) suggests a poor fit.
+
+Two Factor Hierarchical: This model's variance-covariance matrix was not
+positive definite, suggesting that the model is not identified. Instead,
+a two factor hierarchical model with equal loadings was used.
+
+Two Factor Hierarchical (Equal Loadings): The model is significantly
+different from a baseline model (Chi2(35) = 245.40, p \< .001). The NNFI
+(.84 \< .90), CFI (.88 \< .90), RMSEA (.14 \> .08) and SRMR (.18 \> .08)
+suggest a poor fit.
+
+### CS
+
+One Factor: he model is significantly different from a baseline model
+(Chi2(104) = 509.65, p \< .001). The NNFI (.75 \< .90), CFI (.78 \<
+.90), RMSEA (.10 \> .05) and SRMR (.0.083 \> .080) suggest a poor fit.
+
+Four Factor: The model is significantly different from a baseline model
+(Chi2(98) = 196.70, p \< .001). The NNFI (.93 \> .90), RMSEA (.05 \<
+.08), CFI (.946 \> .900), SRMR (.05 \< .08) all suggest a satisfactory
+fit.
+
+Four Factor Hierarchical: The model is significantly different from a
+baseline model (Chi2(100) = 203.89, p \< .001). The NNFI (.93 \> .90),
+RMSEA (.05 \< .08), CFI (.94 \> .90) and SRMR (.05 \< .08) all suggest a
+satisfactory fit.
+
+The four factor model had the lowest AIC of 11883, compared to the 11886
+for the hierarchical model.
+
+### PBIS
+
+The PBIS model must be fit with a maximum-likelihood estimator without
+robust correction. This is because the Yuan-Bentier correction reduces
+the number of degrees of freedom of the model (@yuan1999). Because PBIS
+is only contains 4 items, the number of degrees of freedom becomes
+negative when the robust correction is used. Since a model with negative
+degrees is an over-constrained system and is invalid.
+
+Using the ML estimator, the model is significantly different from a
+baseline model (Chi2(2) = 73.80, p \< .001). The NNFI (.32 \< .90), (.77
+\< .90), RMSEA (.31 \> .08) and SRMR (.09 \> .08) all suggest a poor
+fit.

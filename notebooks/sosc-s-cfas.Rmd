@@ -156,7 +156,13 @@ interpret_fit(cfa_fit)
 ```
 
 ```{r}
-get_omegas(cfa_fit)
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ```{r}

@@ -48,9 +48,7 @@ ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", 
 ```{r}
 all_scale_cor <- corr.test(all_scales %>% select(-ResponseId))
   
-```
 
-```{r}
 
 clean_cor <- all_scale_cor$r %>% 
   as_tibble() %>% 
@@ -91,6 +89,26 @@ final_results <- results %>%
 ```{r}
 final_results %>% 
   write_csv("../results/scale_correlation.csv")
+```
+
+### Means and Standard Deviations
+
+```{r}
+scale_means <- all_scales %>% 
+  pivot_longer(-ResponseId) %>% 
+  group_by(name) %>% 
+  summarise(
+    scale_mean = mean(value, na.rm=TRUE),
+    scale_sd = sd(value, na.rm=TRUE),
+    scale_min = min(value, na.rm=TRUE),
+    scale_max = max(value, na.rm=TRUE)
+    )
+scale_means
+```
+
+```{r}
+scale_means %>% 
+  write_csv("../results/scale_means.csv")
 ```
 
 ```{r}

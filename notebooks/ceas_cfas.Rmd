@@ -12,11 +12,7 @@ library(tidyverse)
 library(feather)
 library(psych)
 library(lavaan)
-library(blavaan)
-library(bayesplot)
-library(loo)
 library(semPlot)
-future::plan("multisession")
 source("funcs.R")
 library(knitr)
 ```
@@ -65,6 +61,14 @@ interpret_fit(cfa_fit)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 format_sem_paths(cfa_fit, scale_name, model_name)
 ```
 
@@ -88,6 +92,14 @@ cfa_fit <- fit_cfa(model_string, df)
 
 ```{r}
 interpret_fit(cfa_fit)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
 ```
 
 ```{r}
@@ -118,6 +130,14 @@ interpret_fit(cfa_fit)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 format_sem_paths(cfa_fit, scale_name, model_name)
 ```
 
@@ -141,7 +161,52 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+### Third Order
+
+```{r}
+model_name <- "Third Order"
+model_string <- "
+CEAS_SC_Engagement_1 =~ CEAS_SC1_2 + CEAS_SC1_4
+CEAS_SC_Engagement_2 =~ CEAS_SC1_1 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Engagement =~ CEAS_SC_Engagement_1 + CEAS_SC_Engagement_2
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+"
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+# report_fit_chi(cfa_fit)
+```
+
+```{r}
+# report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+# interpret_fit(cfa_fit)
 ```
 
 ```{r}
@@ -170,6 +235,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -194,7 +267,13 @@ CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
 ```
 
 ```{r}
-get_omegas(fit_cfa(model_string, df))
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ### CEAS-FROM
@@ -236,6 +315,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -259,6 +346,14 @@ CEAS_FROM_Action =~ CEAS_FROM2_1 + CEAS_FROM2_2 + CEAS_FROM2_4 + CEAS_FROM2_5
 
 ```{r}
 cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
 ```
 
 ```{r}
@@ -289,6 +384,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -301,7 +404,13 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
 ```{r}
-get_omegas(cfa_fit)
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ### CEAS-TO
@@ -343,6 +452,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -366,6 +483,49 @@ CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
 
 ```{r}
 cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
+interpret_fit(cfa_fit)
+```
+
+```{r}
+format_sem_paths(cfa_fit, scale_name, model_name)
+```
+
+```{r}
+format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+### Second Order (Equal Loadings)
+
+```{r}
+model_name <- "Second Order"
+model_string <- "
+CEAS_TO_Engagement =~ CEAS_TO1_1 + CEAS_TO1_2 + CEAS_TO1_4 + CEAS_TO1_5 + CEAS_TO1_6 + CEAS_TO1_8
+CEAS_TO_Action =~ CEAS_TO2_1 + CEAS_TO2_2 + CEAS_TO2_4 + CEAS_TO2_5
+CEAS_TO =~ CEAS_TO_Engagement + CEAS_TO_Action
+"
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
 ```
 
 ```{r}
@@ -396,6 +556,14 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
+report_fit_chi(cfa_fit)
+```
+
+```{r}
+report_fit_less_chi(cfa_fit)
+```
+
+```{r}
 interpret_fit(cfa_fit)
 ```
 
@@ -422,7 +590,13 @@ cfa_fit <- fit_cfa(model_string, df)
 ```
 
 ```{r}
-get_omegas(cfa_fit)
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", scale_name, ".csv"))
 ```
 
 ```{r}
