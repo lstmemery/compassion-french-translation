@@ -31,7 +31,7 @@ all_scales
 ```{r}
 df_cor <- cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", method="spearman")
 
-cor_row_names <- row.names(df_cor)  
+cor_row_names <- row.names(df_cor)
 
 df_cor %>% 
   as_tibble() %>% 
@@ -80,7 +80,7 @@ p_stars <- p_values %>%
 
 ```{r}
 results <- map_dfc(cor_row_names, ~paste0(clean_cor[[.]], p_stars[[.]]))
-colnames(results)<-cor_row_names
+colnames(results) <- cor_row_names
 final_results <- results %>% 
   mutate(Scale = cor_row_names) %>% 
   select(Scale, everything())
@@ -89,6 +89,33 @@ final_results <- results %>%
 ```{r}
 final_results %>% 
   write_csv("../results/scale_correlation.csv")
+```
+
+### Scale-Only adjustment
+
+```{r}
+major_scales <- all_scales %>% 
+  select(CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, `SOCS-O`, `SOCS-S`, DASS_21_Total, ECR_Total, FFMQ_Total, SCS_Negative = Negative, SCS_Positive = Positive, WEMWBS)
+
+major_cor_names <- colnames(major_scales)
+
+```
+
+```{r}
+major_scale_cor <- corr.test(major_scales, adjust = "BH")
+major_scale_cor
+```
+
+```{r}
+major_scale_stars <- major_scale_cor$stars %>% 
+  as_data_frame() %>% 
+  mutate(Scale = major_cor_names) %>% 
+  select(Scale, everything())
+```
+
+```{r}
+major_scale_stars %>% 
+  write_csv("../results/major_scale_correlation.csv")
 ```
 
 ### Means and Standard Deviations

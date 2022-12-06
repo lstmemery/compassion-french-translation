@@ -267,6 +267,10 @@ CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
 ```
 
 ```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
 omegas <- get_omegas(cfa_fit)
 omegas
 ```
@@ -274,6 +278,30 @@ omegas
 ```{r}
 omegas %>% 
   write_csv(str_c("../results/omegas/", scale_name, ".csv"))
+```
+
+### Alternative Omegas
+
+```{r}
+model_string <- "
+CEAS_SC_Engagement =~ CEAS_SC1_1 + CEAS_SC1_2 + CEAS_SC1_4 + CEAS_SC1_5 + CEAS_SC1_6 + CEAS_SC1_8
+CEAS_SC_Action =~ CEAS_SC2_1 + CEAS_SC2_2 + CEAS_SC2_4 + CEAS_SC2_5
+CEAS_SC =~ CEAS_SC_Engagement + CEAS_SC_Action
+"
+```
+
+```{r}
+cfa_fit <- fit_cfa(model_string, df)
+```
+
+```{r}
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", "alt-", scale_name, ".csv"))
 ```
 
 ### CEAS-FROM
