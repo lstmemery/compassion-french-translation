@@ -4,7 +4,7 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
@@ -131,7 +131,7 @@ socs_s_five_fit <- fit_measure
 ## SOCS-S Second Order Model
 
 ```{r}
-model_name <- "Second Order"
+model_name <- "Hierarchical"
 model_string <- '
 recognizing_suffering =~ s1 + s6 + s11 + s16
 universality_of_suffering =~ s2 + s7 + s12 + s17
@@ -167,7 +167,6 @@ omegas %>%
 
 ```{r}
 fit_measure <- lav_fit_measures(cfa_fit, df, scale_name, model_name)
-# format_huxtable(fit_measure)
 ```
 
 ```{r}

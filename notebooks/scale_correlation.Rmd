@@ -45,44 +45,59 @@ ggcorrplot(cor(all_scales %>% select(-ResponseId), use="pairwise.complete.obs", 
            type = "upper", hc.order = TRUE, lab=TRUE)
 ```
 
+### Scale-Only adjustment
+
 ```{r}
-all_scale_cor <- corr.test(all_scales %>% select(-ResponseId))
-  
+scales <- all_scales %>% 
+  select(
+    `1. CEAS-SC` = CEAS_S,
+    `2. Engagement Dimension 1` = CEAS_S_Engagement_Dimension_1,
+    `3. Engagement Dimension 2` = CEAS_S_Engagement_Dimension_2,
+    `4. Engagement` = CEAS_S_Engagement,
+    `5. Action` = CEAS_S_Action,
+    `6. CEAS-TO` = CEAS_TO,
+    `7. Engagement` = CEAS_TO_Engagement,
+    `8. Action` = CEAS_TO_Action,
+    `9. CEAS-FROM` = CEAS_FROM,
+    `10. Engagement` = CEAS_FROM_Engagement,
+    `11. Action` = CEAS_FROM_Action,
+    `12. CS` = CS_Total,
+    `13. Common Humanity` = CS_Total,
+    `14. Indifference (Reverse)` = CS_Total,
+    `15. Kindness` = CS_Total,
+    `16. Mindfulness` = CS_Total,
+    `17. SOCS-S` = `SOCS-S`,
+    `18. Acting or motivation to act to alleviate suffering` = SOCS_S_Acting_To_Alleviate,
+    `19. Feeling suffering` = SOCS_S_Feeling_Suffering,
+    `20. Recognizing Suffering` = SOCS_S_Recognizing_Suffering,
+    `21. Tolerating uncomfortable feelings` = SOCS_S_Tolerating_Feelings,
+    `22. Understanding the universality of suffering` = SOCS_S_Understanding_Suffering,
+    `23. SOCS-O` = `SOCS-O`,
+    `24. Acting or motivation to act to alleviate suffering` = SOCS_O_Acting_To_Alleviate,
+    `25. Feeling suffering` = SOCS_O_Feeling_Suffering,
+    `26. Recognizing Suffering` = SOCS_O_Recognizing_Suffering,
+    `27. Tolerating uncomfortable feelings` = SOCS_O_Tolerating_Feelings,
+    `28. Understanding the universality of suffering` = SOCS_O_Understanding_Suffering,
+    `29. SCS-Positive` = Positive,
+    `30. SCS-Negative` = Negative,
+    `31. DASS-21` = DASS_21_Total,
+    `32. ECR` = ECR_Total,
+    `33. FFMQ` = FFMQ_Total,
+    `34. WEMWBS` = WEMWBS
+    )
 
+cor_names <- colnames(scales)
 
-clean_cor <- all_scale_cor$r %>% 
-  as_tibble() %>% 
-  mutate_all(~round(., 2)) %>% 
-  mutate(row_name = cor_row_names)
-  # filter(str_detect(row_name, "SOCS")) %>% 
-  # select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
 ```
 
 ```{r}
-p_values <- all_scale_cor$p %>% 
-  as_tibble() 
-  # mutate(row_name = cor_row_names)
-  # filter(str_detect(row_name, "SOCS")) %>% 
-  # select(row_name, CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, DASS_21_Total, ECR_Total, FFMQ_Total, PBIS, SCS_Positive = Positive, SCS_Negative = Negative)
-
-p_col <- ncol(p_values)
-p_row <- nrow(p_values)
-
-p_stars <- p_values %>% 
-  mutate(across(where(is.numeric), ~p.adjust(., method="BH", n=p_col * p_row))) %>% 
-  mutate(across(where(is.numeric), ~case_when(
-    . > 0.05 ~ "",
-    . > 0.01 ~ "*",
-    . > 0.001 ~ "**",
-    TRUE ~ "***"
-    )))
+scale_cor <- corr.test(major_scales, adjust = "BH")
 ```
 
 ```{r}
-results <- map_dfc(cor_row_names, ~paste0(clean_cor[[.]], p_stars[[.]]))
-colnames(results) <- cor_row_names
-final_results <- results %>% 
-  mutate(Scale = cor_row_names) %>% 
+final_results <- scale_cor$stars %>% 
+  as_data_frame() %>% 
+  mutate(Scale = cor_names) %>% 
   select(Scale, everything())
 ```
 

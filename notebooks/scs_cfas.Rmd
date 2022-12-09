@@ -426,6 +426,66 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 scs_two_bifactor_fit <- fit_measure
 ```
 
+### Omegas (Positive and Negative)
+
+```{r}
+model_name <- "Negative Hierarchical"
+model_string <- "
+Self_Judgement =~ SCS_1 + SCS_8 + SCS_11 + SCS_16 + SCS_21
+Overidentification =~ SCS_2 + SCS_6 + SCS_20 + SCS_24
+Isolation =~ SCS_4 + SCS_13 + SCS_18 + SCS_25
+Negative =~ Self_Judgement + Overidentification + Isolation 
+"
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", "scs-negative", ".csv"))
+```
+
+```{r}
+model_name <- "Positive Hierarchical"
+model_string <- "
+Common_Humanity =~ SCS_3 + SCS_7 + SCS_10 + SCS_15
+Self_Kindness =~ SCS_5 + SCS_12 + SCS_19 + SCS_23 + SCS_26
+Mindfulness =~ SCS_9 + SCS_14 + SCS_17 + SCS_22
+Positive =~ Common_Humanity + Self_Kindness + Mindfulness
+"
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+```{r}
+omegas <- get_omegas(cfa_fit)
+omegas
+```
+
+```{r}
+omegas %>% 
+  write_csv(str_c("../results/omegas/", "scs-positive", ".csv"))
+```
+
 ```{r}
 sessionInfo()
 ```
