@@ -1,6 +1,8 @@
 ---
 title: "SOCS-S Initial CFA"
-output: word_document
+output:
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -86,6 +88,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 socs_s_one_fit <- fit_measure
 ```
 
+```{r}
+semTools::AVE(cfa_fit) %>% kable()
+```
+
 ## SOCS-S Five Factor Model
 
 ```{r}
@@ -126,6 +132,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 socs_s_five_fit <- fit_measure
+```
+
+```{r}
+semTools::AVE(cfa_fit) %>% kable()
 ```
 
 ## SOCS-S Second Order Model
@@ -175,6 +185,10 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
+```
+
+```{r}
+semTools::AVE(cfa_fit) %>% kable()
 ```
 
 ```{r}

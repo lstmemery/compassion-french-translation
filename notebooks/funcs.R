@@ -128,7 +128,6 @@ format_sem_paths <- function(fit_model, item_scale, model_name) {
     fade = FALSE, 
     nCharNodes = 10, 
   )
-  title(str_c(item_scale, model_name, sep=" "))
 }
 
 format_huxtable <- function(df) {

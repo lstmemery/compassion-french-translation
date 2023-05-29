@@ -62,10 +62,10 @@ scales <- all_scales %>%
     `10. Engagement` = CEAS_FROM_Engagement,
     `11. Action` = CEAS_FROM_Action,
     `12. CS` = CS_Total,
-    `13. Common Humanity` = CS_Total,
-    `14. Indifference (Reverse)` = CS_Total,
-    `15. Kindness` = CS_Total,
-    `16. Mindfulness` = CS_Total,
+    `13. Common Humanity` = CS_Common_Humanity,
+    `14. Indifference (Reverse)` = CS_Indifference_Reverse,
+    `15. Kindness` = CS_Kind,
+    `16. Mindfulness` = CS_Mindfulness,
     `17. SOCS-S` = `SOCS-S`,
     `18. Acting or motivation to act to alleviate suffering` = SOCS_S_Acting_To_Alleviate,
     `19. Feeling suffering` = SOCS_S_Feeling_Suffering,
@@ -91,12 +91,12 @@ cor_names <- colnames(scales)
 ```
 
 ```{r}
-scale_cor <- corr.test(major_scales, adjust = "BH")
+scale_cor <- corr.test(scales, adjust = "BH")
 ```
 
 ```{r}
 final_results <- scale_cor$stars %>% 
-  as_data_frame() %>% 
+  as_tibble() %>% 
   mutate(Scale = cor_names) %>% 
   select(Scale, everything())
 ```
