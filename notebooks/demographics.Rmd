@@ -13,6 +13,7 @@ library(tidyverse)
 library(feather)
 library(jtools)
 library(scales)
+library(rstatix)
 ```
 
 ```{r}
@@ -234,7 +235,7 @@ ethnicity_df %>%
 
 ```{r}
 education_df <- read_csv("../data/english_demographics.csv") %>% 
-  select(DEM16)
+  select(ResponseId, DEM16)
 ```
 
 ```{r}
@@ -246,7 +247,7 @@ education_count_df <- education_df %>%
   select(-total, Response = DEM16) %>% 
   arrange(desc(Count))
 
-education_count_df %>% 
+education_count_df %>%
   knitr::kable()
 ```
 
@@ -257,6 +258,69 @@ ggplot(education_count_df, aes(x = factor(Response, levels = Response), y = Coun
   labs(x="Education Level", y="Count") +
   scale_x_discrete(labels = wrap_format(10))
 ```
+
+# T tests
+
+```{r}
+socs_df <- read_feather("../results/socs_scales.feather")
+ceas_from_df <- read_feather("../results/ceas_from_scales.feather")
+ceas_to_df <- read_feather("../results/ceas_to_scales.feather")
+ceas_sc_df <- read_feather("../results/ceas_sc_scales.feather")
+cs_df <- read_feather("../results/cs_scales.feather")
+```
+
+```{r}
+scales_df <- left_join(socs_df, ceas_from_df) %>% 
+  left_join(ceas_sc_df) %>% 
+  left_join(ceas_to_df) %>% 
+  left_join(cs_df) %>% 
+  select(ResponseId, `SOCS-O`, `SOCS-S`, CEAS_FROM, CEAS_TO, CEAS_S, CS_Total)
+```
+
+```{r}
+gender_anova_df <- scales_df %>%
+  pivot_longer(-ResponseId) %>% 
+  inner_join(gender_df) %>% 
+  group_by(name) %>% 
+  kruskal_test(value ~ dem_value) %>% 
+  mutate(demographic = "Gender")
+```
+```{r}
+education_anova_df <- scales_df %>%
+  pivot_longer(-ResponseId) %>% 
+  inner_join(education_df) %>% 
+  group_by(name) %>% 
+  kruskal_test(value ~ DEM16) %>% 
+  mutate(demographic = "Education Level")
+```
+
+```{r}
+age_cor_df <- scales_df %>%
+  pivot_longer(-ResponseId) %>% 
+  inner_join(age_df) %>% 
+  group_by(name) %>% 
+  cor_test(value, dem_value, method = "spearman") %>% 
+  mutate(demographic = "Age")
+```
+
+```{r}
+demographic_differences_df <- bind_rows(
+  gender_anova_df,
+  education_anova_df,
+  age_cor_df
+) %>% 
+  adjust_pvalue(method="BH") %>% 
+  add_significance() %>% 
+  select(scale = name, demographic, method, p, p.adj, p.adj.signif)
+
+```
+
+```{r}
+demographic_differences_df %>% 
+  write_csv("../results/demographic_differences.csv")
+```
+
+
 
 ```{r}
 sessionInfo()

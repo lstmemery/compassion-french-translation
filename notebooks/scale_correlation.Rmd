@@ -81,9 +81,10 @@ scales <- all_scales %>%
     `29. SCS-Positive` = Positive,
     `30. SCS-Negative` = Negative,
     `31. DASS-21` = DASS_21_Total,
-    `32. ECR` = ECR_Total,
-    `33. FFMQ` = FFMQ_Total,
-    `34. WEMWBS` = WEMWBS
+    `32. ECR Anxiety` = ECR_Anxiety,
+    `33. ECR Avoidance` = ECR_Avoidance,
+    `34. FFMQ` = FFMQ_Total,
+    `35. WEMWBS` = WEMWBS
     )
 
 cor_names <- colnames(scales)
@@ -110,7 +111,7 @@ final_results %>%
 
 ```{r}
 major_scales <- all_scales %>% 
-  select(CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, `SOCS-O`, `SOCS-S`, DASS_21_Total, ECR_Total, FFMQ_Total, SCS_Negative = Negative, SCS_Positive = Positive, WEMWBS)
+  select(CEAS_FROM, CEAS_S, CEAS_TO, CS_Total, `SOCS-O`, `SOCS-S`, DASS_21_Total, ECR_Anxiety, ECR_Avoidance, FFMQ_Total, SCS_Negative = Negative, SCS_Positive = Positive, WEMWBS)
 
 major_cor_names <- colnames(major_scales)
 

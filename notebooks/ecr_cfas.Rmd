@@ -214,6 +214,51 @@ ecr_hierarchical_fit <- fit_measure
 get_omegas(cfa_fit)
 ```
 
+## Separate Models
+
+```{r}
+model_name <- "Anxiety"
+model_string <- "
+Anxiety =~ ECR_1 + ECR_2 + ECR_3 + ECR_5 + ECR_7 + ECR_8
+"
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+
+```{r}
+get_omegas(cfa_fit)
+```
+
+```{r}
+model_name <- "Avoidance"
+model_string <- "
+Avoidance =~ ECR_4 + ECR_6 + ECR_9 + ECR_10 + ECR_11 + ECR_12
+"
+```
+
+```{r}
+cfa_fit <- cfa(
+    model_string, 
+    data=df,
+    estimator="MLR",
+    std.lv=TRUE
+  )
+```
+
+
+```{r}
+get_omegas(cfa_fit)
+```
+
+
 ```{r}
 sessionInfo()
 ```
