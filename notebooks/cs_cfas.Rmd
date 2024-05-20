@@ -15,9 +15,31 @@ library(psych)
 source("funcs.R")
 ```
 
+
+
 ```{r}
 cs <- read_feather("../results/tidy_cs.feather")
 ```
+
+```{r}
+gender_df <- read_csv("../data/gender.csv") %>% 
+  select(-dem_item)
+
+age_df <- read_csv("../data/age.csv") %>% 
+  mutate(dem_value = if_else(dem_value < 30, "Under 30", "30 and over")) %>% 
+  select(-dem_item)
+
+
+invariance_df <- cs %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  inner_join(age_df) %>% 
+  select(-ResponseId) %>% 
+  add_count(dem_value) %>% 
+  filter(n > 7) %>% 
+  select(-n)
+```
+
 
 ```{r}
 cs_wide <- cs %>% 
@@ -88,6 +110,11 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 ```
 
 ```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
+
+```{r}
 cs_one_fit <- fit_measure
 ```
 
@@ -135,6 +162,11 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
 ```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 
 ```{r}
 cs_four_factor_fit <- fit_measure
@@ -195,6 +227,11 @@ format_sem_paths(cfa_fit, scale_name, model_name)
 ```{r}
 format_huxtable(format_cfa_parameters(cfa_fit))
 ```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 
 ```{r}
 cs_second_order_fit <- fit_measure

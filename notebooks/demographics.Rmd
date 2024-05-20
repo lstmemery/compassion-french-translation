@@ -62,6 +62,18 @@ age_df %>%
 ```
 
 ```{r}
+age_df %>% 
+  write_csv("../data/age.csv")
+```
+
+
+```{r}
+age_df %>% 
+  summarise(median(dem_value))
+```
+
+
+```{r}
 ggplot(age_df, aes(x = dem_value)) +
   geom_histogram(bins=15) +
   theme_apa() +
@@ -80,6 +92,12 @@ gender_df <- df %>%
     TRUE ~ "Non-Binary/Genderfluid"
   ))
 ```
+
+```{r}
+gender_df %>% 
+  write_csv("../data/gender.csv")
+```
+
 
 ```{r}
 demo_count_table %>% 
@@ -311,8 +329,9 @@ demographic_differences_df <- bind_rows(
 ) %>% 
   adjust_pvalue(method="BH") %>% 
   add_significance() %>% 
-  select(scale = name, demographic, method, p, p.adj, p.adj.signif)
+  select(scale = name, demographic, method, p, p.adj, p.adj.signif, cor)
 
+demographic_differences_df
 ```
 
 ```{r}

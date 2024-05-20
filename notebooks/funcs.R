@@ -183,3 +183,16 @@ report_fit_chi <- function(cfa_fit) {
     cfa_fit, 
     metrics=c("Chi2", "Chi2_df", "p_Chi2", "NNFI", "CFI"))
 }
+
+
+test_measurement_invariance_1 <- function(model_string, df, group_name) {
+  configural_cfa <- cfa(model_string, data=df,  group = group_name)
+  weak_cfa <- cfa(model_string, data=df,  group = group_name, group.equal = "loadings")
+  strong_cfa <- cfa(model_string, data=df,  group = group_name, group.equal = c("intercepts", "loadings"))
+  lavTestLRT(configural_cfa, weak_cfa, strong_cfa)
+}
+
+test_measurement_invariance <- function(model_string, df, group_name) {
+  tryCatch(expr=measurementInvariance(model=model_string, estimator="MLR", data=invariance_df, group="dem_value", std.lv = TRUE), error = function(cond) "error")
+}
+

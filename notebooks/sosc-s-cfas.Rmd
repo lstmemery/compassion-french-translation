@@ -22,7 +22,14 @@ source("funcs.R")
 ```{r}
 df <- read_feather("../results/tidy_filtered_responses.feather") %>% 
   mutate(response = ordered(response, levels = c("1", "2", "3", "4", "5")))
+
+gender_df <- read_csv("../data/gender.csv")
+
+age_df <- read_csv("../data/age.csv") %>% 
+  mutate(dem_value = if_else(dem_value < 30, "Under 30", "30 and over"))
 ```
+
+
 
 ```{r, make_df}
 socs_s_df <- df %>% 
@@ -31,7 +38,24 @@ socs_s_df <- df %>%
   select(starts_with("SOCS_S")) %>% 
   rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
   drop_na()
+
+invariance_df <- df %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  inner_join(age_df) %>% 
+  select(starts_with("SOCS_S"), dem_value) %>%
+  rename(dem_value_9999 = "dem_value") %>% 
+  rename_with(~str_c("s", str_extract(., "\\d+"))) %>% 
+  rename(dem_value="s9999") %>% 
+  add_count(dem_value) %>%
+  filter(n > 7) %>%
+  select(-n)
 ```
+
+```{r}
+invariance_df
+```
+
 
 ```{r, corrlation}
 socs_s <- polychoric(socs_s_df)
@@ -92,6 +116,11 @@ socs_s_one_fit <- fit_measure
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
+
 ## SOCS-S Five Factor Model
 
 ```{r}
@@ -137,6 +166,12 @@ socs_s_five_fit <- fit_measure
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
 ```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
+
 
 ## SOCS-S Second Order Model
 
@@ -189,6 +224,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ```{r}

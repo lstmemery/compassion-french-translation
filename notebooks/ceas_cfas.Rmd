@@ -21,6 +21,20 @@ library(knitr)
 
 ```{r}
 ceas_sc <- read_feather("../results/tidy_ceas_sc.feather")
+
+gender_df <- read_csv("../data/gender.csv")
+
+age_df <- read_csv("../data/age.csv") %>% 
+  mutate(dem_value = if_else(dem_value < 30, "Under 30", "30 and over"))
+
+invariance_df <- ceas_sc %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  inner_join(age_df) %>% 
+  select(-ResponseId) %>% 
+  add_count(dem_value) %>% 
+  filter(n > 7) %>% 
+  select(-n)
 ```
 
 ```{r}
@@ -80,6 +94,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### CEAS-SC Two Factor
 
 ```{r}
@@ -116,6 +134,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### CEAS-SC Level One Model
@@ -157,6 +179,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### Three factor
 
 ```{r}
@@ -194,6 +220,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### Third Order
@@ -237,6 +267,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### Level Two Model (Equal Loadings)
 
 ```{r}
@@ -276,6 +310,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### Omega
@@ -332,6 +370,15 @@ omegas %>%
 
 ```{r}
 ceas_from <- read_feather("../results/tidy_ceas_from.feather")
+
+invariance_df <- ceas_from %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  inner_join(age_df) %>% 
+  select(-ResponseId) %>% 
+  add_count(dem_value) %>% 
+  filter(n > 7) %>% 
+  select(-n)
 ```
 
 ```{r}
@@ -390,6 +437,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### Two Factor
 
 ```{r}
@@ -426,6 +477,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### Second Order
@@ -468,6 +523,11 @@ semTools::AVE(cfa_fit) %>% kable()
 ```
 
 ```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+
+```
+
+```{r}
 omegas <- get_omegas(cfa_fit)
 omegas
 ```
@@ -481,6 +541,15 @@ omegas %>%
 
 ```{r}
 ceas_to <- read_feather("../results/tidy_ceas_to.feather")
+
+invariance_df <- ceas_to %>% 
+  pivot_wider(values_from = response, id_cols = ResponseId, names_from = item) %>% 
+  filter_all(all_vars(!is.na(.))) %>% 
+  inner_join(age_df) %>% 
+  select(-ResponseId) %>% 
+  add_count(dem_value) %>% 
+  filter(n > 7) %>% 
+  select(-n)
 ```
 
 ```{r}
@@ -539,6 +608,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### Two Factor
 
 ```{r}
@@ -575,6 +648,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### Second Order
@@ -616,6 +693,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 semTools::AVE(cfa_fit) %>% kable()
 ```
 
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
+```
+
 ### Second Order (Equal Loadings)
 
 ```{r}
@@ -653,6 +734,10 @@ format_huxtable(format_cfa_parameters(cfa_fit))
 
 ```{r}
 semTools::AVE(cfa_fit) %>% kable()
+```
+
+```{r}
+test_measurement_invariance(model_string, invariance_df, "dem_value")
 ```
 
 ### Omega

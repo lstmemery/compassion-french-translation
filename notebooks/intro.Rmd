@@ -28,6 +28,16 @@ df <- df %>%
 ```
 
 ```{r}
+df <- df %>% 
+  select(-DEM18, -DEM18_1_TEXT, -DEM17, -DEM17_2_TEXT, -DEM15, -DEM15_4_TEXT, -DEM14, -DEM13)
+```
+
+```{r}
+write_csv(df, "../data/Compassion_14 November 2021_16.36-lessdem.csv")
+```
+
+
+```{r}
 responses <- df %>% 
   select(
     ResponseId,
