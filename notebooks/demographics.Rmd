@@ -63,6 +63,12 @@ age_df %>%
 
 ```{r}
 age_df %>% 
+  summarise(median(dem_value))
+```
+
+
+```{r}
+age_df %>% 
   write_csv("../data/age.csv")
 ```
 
